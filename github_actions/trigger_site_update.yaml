@@ -1,0 +1,23 @@
+# Action to trigger an update to the https://qcr.github.io site
+# (will FAIL if you aren't a member of https://github.com/qcr)
+# NOTE: untested as need email access for 'qcrbot' account...
+
+name: Trigger QCR site update
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  trigger:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout latest code in this repository
+        uses: actions/checkout@v2
+      - name: Check we should actually do something
+        run: |
+          echo "Bail if no markdown diffs..."
+          echo "Bail if user doesn't have access to QCR secrets..."
+      - name: Send HTTP trigger to 'qcr.github.io' repository
+        run: |
+          echo "TODO"
