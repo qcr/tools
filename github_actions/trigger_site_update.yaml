@@ -1,12 +1,42 @@
 # Action to trigger an update to the https://qcr.github.io site
-# (will FAIL if you aren't a member of https://github.com/qcr)
-# NOTE: untested as need email access for 'qcrbot' account...
+#
+# HOW TO USE:
+# 1) paste this file into the '.github/workflows' folder of YOUR repository
+# 2) edit at least 'name' in the 'inputs' section below (see documentation at
+#    https://github.com/qcr/qcr.github.io#content-settings-specification for
+#    full details of inputs)
+# 3) commit & push the changes to your MASTER branch
+#
+# NOTE: you need to add a 'secret' to your repository also if it is not owned
+# by the 'qcr' organisation (i.e. the URL is not https://github.com/qcr/*):
+# - TODO
 
 name: Trigger QCR site update
 
 on:
   push:
     branches: [master]
+    inputs:
+      name:
+        description: "Name given to your content in cards and page titles"
+        required: true
+        # value: 'My awesome repository'
+      id:
+        description: "ID to be used throughout site, including in URL"
+        required: false
+        # value: 'awesome-repository'
+      content:
+        description: "Path of file to render for page content"
+        required: false
+        # value: './README.md'
+      image:
+        description: "Path of image to use as the feature image in cards"
+        required: false
+        # value: './docs/image.png'
+      image_position:
+        description: "Value for CSS 'background-position' of feature image"
+        required: false
+        # value: '50% 50%'
 
 jobs:
   trigger:
@@ -14,10 +44,9 @@ jobs:
     steps:
       - name: Checkout latest code in this repository
         uses: actions/checkout@v2
-      - name: Check we should actually do something
+      - name: Confirm credentials are accessible
         run: |
-          echo "Bail if no markdown diffs..."
-          echo "Bail if user doesn't have access to QCR secrets..."
+          [ -z "${{ secrets.QCRBOT_TOKEN }}" ] && printf "%s\n%s\n%s\n\t%s" "The 'QCRBOT_TOKEN' secret wasn't found. Either change ownership of your" "repository to the 'qcr' GitHub organisation, or follow these instructions" "to manually add the token to your repository:" "TODO" && exit 1 || exit 0
       - name: Send HTTP trigger to 'qcr.github.io' repository
         run: |
-          echo "TODO"
+          curl --request POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ secrets.QCRBOT_TOKEN }}" https://api.github.com/repos/qcr/qcr.github.io/actions/workflows/remote_update.yml/dispatches --data '{"ref": "develop", "inputs": {"name": "Remote update testing"}}'
