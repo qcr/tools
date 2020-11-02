@@ -8,8 +8,9 @@
 # 3) commit & push the changes to your MASTER branch
 #
 # NOTE: you need to add a 'secret' to your repository also if it is not owned
-# by the 'qcr' organisation (i.e. the URL is not https://github.com/qcr/*):
-# - TODO
+# by the 'qcr' organisation (i.e. the URL is not https://github.com/qcr/*).
+# Follow the instructions in this repository's README:
+#     https://github.com/qcr/tools/#using-the-qcrbot-access-token
 
 name: Trigger QCR site update
 
