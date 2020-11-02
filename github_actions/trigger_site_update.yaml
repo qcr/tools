@@ -2,9 +2,9 @@
 #
 # HOW TO USE:
 # 1) paste this file into the '.github/workflows' folder of YOUR repository
-# 2) edit at least 'name' in the 'inputs' section below (see documentation at
+# 2) edit at least 'name' in the 'env' section below (see documentation at
 #    https://github.com/qcr/qcr.github.io#content-settings-specification for
-#    full details of inputs)
+#    full details of options)
 # 3) commit & push the changes to your MASTER branch
 #
 # NOTE: you need to add a 'secret' to your repository also if it is not owned
@@ -26,7 +26,7 @@ env:
   # Path of image to use as the feature image in cards, relative to repo root (OPTIONAL)
   # image: 'docs/image.png'
 
-  # Value for CSS 'background-position' of feature image
+  # Value for CSS 'background-position' of feature image (OPTIONAL)
   # image_position: '50% 50%'
 
 on: [push]
