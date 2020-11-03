@@ -20,19 +20,4 @@ We have a [qcrbot](https://github.com/qcrbot) GitHub account, which can be used 
 - You should ensure branch protection exists on your master branch to block any overwriting of your history (go to "settings" -> "branches" -> "add rule" and ensure "allow force pushes" is **unticked**)
 - Many people have access to this account, don't give it any more permissions than it needs
 
-## Using the `qcrbot` access token
-
-Access tokens allow scripts and programs to run actions on behalf of a user, often with a reduced scope of permissions. We have created an access token for the `qcrbot` GitHub account to help use the account in scripts and GitHub Actions.
-
-**YOU SHOULD NEVER ENTER THIS CODE IN PLAIN-TEXT IN YOUR SCRIPTS OR ACTION FILES! ONLY USE THE METHOD BELOW, OR PASS IT IN VIA ENVIRONMENT VARIABLES WHEN USING LOCALLY**
-
-GitHub Actions have a great tool for using sensitive data called [encrypted secrets](https://docs.github.com/en/free-pro-team@latest/actions/reference/encrypted-secrets). We have added the below access token as a `qcr` organisation secret called `QCRBOT_TOKEN`, which means any repository owned by `qcr` can simply access the token by using `${{ secrets.QCRBOT_TOKEN }}` in their Action files.
-
-Unfortunately, there is no way to share organisation secrets with member-owned repositories so you must add the token manually if you want to use `qcrbot` for actions in repositories owned by your user. To add the access token to your repository:
-
-1. Go to "Settings" -> "Secrets" and click "New Secret"
-2. Name the secret `QCRBOT_TOKEN` (must be named this for our Actions to work out-of-the-box)
-3. Paste the following into the value field: `07454520f5040f55ba7671e80d2496c973cd80c3`
-4. Click "Add secret"
-
-Done. The secret should now be accessible in your Actions.
+Please see [this page](https://wiki.qut.edu.au/display/cyphy/Shared+account+for+QCR+members) on our private wiki if you would like to use access tokens in your scripts to automate use of the `qcrbot` account.
