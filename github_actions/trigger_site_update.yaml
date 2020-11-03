@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Confirm credentials are accessible
         run: |
-          [ -z "${{ secrets.QCRBOT_TOKEN }}" ] && printf "%s\n%s\n%s\n\t%s\n" "The 'QCRBOT_TOKEN' secret wasn't found. Either change ownership of your" "repository to the 'qcr' GitHub organisation, or follow these instructions" "to manually add the token to your repository:" "TODO" && exit 1 || exit 0
+          [ -z "${{ secrets.QCRBOT_TOKEN }}" ] && printf "%s\n%s\n%s\n\t%s\n" "The 'QCRBOT_TOKEN' secret wasn't found. Either change ownership of your" "repository to the 'qcr' GitHub organisation, or follow these instructions" "to manually add the token to your repository:" "https://github.com/qcr/tools/#using-the-qcrbot-access-token" && exit 1 || exit 0
       - name: Send HTTP trigger to 'qcr.github.io' repository
         run: |
           curl -sS --request POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${{ secrets.QCRBOT_TOKEN }}" https://api.github.com/repos/qcr/qcr.github.io/actions/workflows/remote_update.yml/dispatches --data '{"ref": "master", "inputs": {"name": "${{ env.name }}", "url": "https://github.com/${{ github.repository }}"}}'
