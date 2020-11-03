@@ -31,8 +31,8 @@ GitHub Actions have a great tool for using sensitive data called [encrypted secr
 Unfortunately, there is no way to share organisation secrets with member-owned repositories so you must add the token manually if you want to use `qcrbot` for actions in repositories owned by your user. To add the access token to your repository:
 
 1. Go to "Settings" -> "Secrets" and click "New Secret"
-2. Name the secret `QCRBOT_TOKEN` (it must be named this to make our Actions work out-of-the-box)
-3. Paste the following into the value field: `859ecf3939ebbb41653a0507a401195e99a1d76f`
+2. Name the secret `QCRBOT_TOKEN` (must be named this for our Actions to work out-of-the-box)
+3. Paste the following into the value field: `07454520f5040f55ba7671e80d2496c973cd80c3`
 4. Click "Add secret"
 
 Done. The secret should now be accessible in your Actions.
