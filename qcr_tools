@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+#
+# A light wrapper for using QCR tools. This is deliberately light, so that
+# users should never have to update this script once they have it, but will
+# always have access to the latest templates.
+#
+# Please see https://github.com/qcr/tools for full details on how things work,
+# and instructions on how to add your own templates. The more templates the
+# merrier!
+#
+# Author: Ben Talbot
+# Version: 0.1.0
+
+if [ -z "$1" ]; then
+  printf "\e[31m%s\n\t%s\e[0m\n" \
+    "No tool name provided. Please pick from one of these scripts:" \
+    "https://github.com/qcr/tools/blob/master/tools/"
+  exit 0
+fi
+
+bash <(curl -s -L --compressed \
+    https://github.com/qcr/tools/raw/master/tools/$1 ) "$@"
