@@ -9,13 +9,13 @@
 # merrier!
 #
 # Author: Ben Talbot
-# Version: 0.2.0
+# Version: 0.2.1
 
 if [ -z "$1" ]; then
   printf "\e[31m%s\n\t%s\e[0m\n" \
     "No tool name provided. Please pick from one of these scripts:" \
     "https://github.com/qcr/tools/blob/master/tools/"
-  exit 0
+  exit 1
 fi
 
 tool="$1"
