@@ -5,6 +5,7 @@
 #     <title to put on pdf> \
 #     <contact email to put on pdf> \
 #     <url for the QR tag to point to>
+set -euo pipefail
 
 JOBNAME="robot_tag"
 TMP_DIR="/tmp/robot_tag"
@@ -24,7 +25,7 @@ printf "\e[31m%s\e[0m\n" "Fetching dependencies"
 #   wget
 #   pdflatex
 
-mkdir "$TMP_DIR"
+if [ ! -d "$TMP_DIR" ]; then mkdir "$TMP_DIR"; fi
 wget -O "$IMAGE_TMP" "$IMAGE_URL"
 
 printf "\e[32m%s\n\t%s\t\t%s\n\t%s\t\t%s\n\t%s\t%s\e[0m\n\n" \
