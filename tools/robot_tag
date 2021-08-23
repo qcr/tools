@@ -6,8 +6,11 @@
 #     <contact email to put on pdf> \
 #     <url for the QR tag to point to>
 
+JOBNAME="robot_tag"
+TMP_DIR="/tmp/robot_tag"
+
 IMAGE_URL="https://github.com/qcr/tools/raw/master/misc/qcr_header.jpg"
-IMAGE_TMP="/tmp/qcr_header.jpg"
+IMAGE_TMP="$TMP_DIR/qcr_header.jpg"
 
 if [ $# -ne 3 ]; then
   printf "\e[31m%s\n\t%s\e[0m\n" \
@@ -21,13 +24,15 @@ printf "\e[31m%s\e[0m\n" "Fetching dependencies"
 #   wget
 #   pdflatex
 
+mkdir "$TMP_DIR"
 wget -O "$IMAGE_TMP" "$IMAGE_URL"
 
 printf "\e[32m%s\n\t%s\t\t%s\n\t%s\t\t%s\n\t%s\t%s\e[0m\n\n" \
   "Making a robot tag with values:" \
   "Title:" "$1" "Email:" "$2" "Target URL:" "$3"
 
-pdflatex << EOF
+pushd "$TMP_DIR"
+pdflatex -jobname="$JOBNAME" << EOF
 \documentclass[24pt,portrait]{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage{qrcode}
@@ -68,4 +73,7 @@ if [ "$err" -ne 0 ]; then
   printf "\e[33mFailed. See errors above.\e[0m\n"
   exit $err
 fi
-printf "\e[32mFinished (see ./robot_tag.pdf)\e[0m\n"
+
+popd
+mv "$TMP_DIR/$JOBNAME.pdf" "$JOBNAME.pdf"
+printf "\e[32mFinished (see ./$JOBNAME.pdf)\e[0m\n"
