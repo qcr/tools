@@ -19,7 +19,7 @@ qcr_tools TOOL_NAME TOOL_ARG1 TOOL_ARG2 ...
 For example, the following will run the tool for making tags to place on QCR robots:
 
 ```
-qcr_tools robot_tag "Your name" "your.email@qut.edu.au" "https://your/target/page"
+qcr_tools robot_tag "Your title" "your.email@qut.edu.au" "https://your/target/page"
 ```
 
 ### Adding your own tools

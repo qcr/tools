@@ -21,9 +21,9 @@ if [ $# -ne 3 ]; then
 fi
 
 printf "\e[32m%s\e[0m\n" "Fetching dependencies"
-# sudo apt install -y \
-#   wget
-#   pdflatex
+sudo apt install -y \
+  wget \
+  texlive-latex-extra
 
 if [ ! -d "$TMP_DIR" ]; then mkdir "$TMP_DIR"; fi
 wget -O "$IMAGE_TMP" "$IMAGE_URL"
