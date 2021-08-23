@@ -12,4 +12,45 @@ if [ $# -ne 3 ]; then
     "robot_tag TITLE CONTACT_EMAIL TARGET_URL"
   exit 1
 fi
-echo "Making a tag...."
+
+
+printf "\e[32m%s\n\t%s\t\t%s\n\t%s\t\t%s\n\t%s\t%s\e[0m\n" \
+  "Making a robot tag with values:" \
+  "Title:" "$1" "Email:" "$2" "Target URL:" "$3"
+
+read -r -d '' input << EOF
+\documentclass[24pt,portrait]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{qrcode}
+\usepackage[orientation=portrait,size=a0,scale=6,debug]{beamerposter}
+
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\usefonttheme{structurebold}
+
+\title{$1}
+\author{QUT Centre for Robotics}
+\date{April 2021}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+\includegraphics[width=1.0\textwidth]{QCRLogo.jpg}
+\centering
+\vspace{-2cm}\\
+\fontsize{200}{7.2}\selectfont \textbf{$1}\\
+\vspace{1cm}
+\color{red}\fontsize{140}{7.2}\selectfont {Scan me before use!}\\
+\color{black}
+\vspace{2cm}
+\begin{figure}[h!]
+\centering
+\hspace{10mm}\qrcode[height=75cm]{$3}
+\vspace{2cm}
+\caption{Don't have access? Email $2}
+\end{figure}
+
+\end{document}
+EOF
+
+echo "$input"
