@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#
+# Tools for making QR tags to stick on robots
+
+echo "Making a tag...."
