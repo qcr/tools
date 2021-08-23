@@ -14,11 +14,11 @@ if [ $# -ne 3 ]; then
 fi
 
 
-printf "\e[32m%s\n\t%s\t\t%s\n\t%s\t\t%s\n\t%s\t%s\e[0m\n" \
+printf "\e[32m%s\n\t%s\t\t%s\n\t%s\t\t%s\n\t%s\t%s\e[0m\n\n" \
   "Making a robot tag with values:" \
   "Title:" "$1" "Email:" "$2" "Target URL:" "$3"
 
-read -r -d '' input << EOF
+pdflatex << EOF
 \documentclass[24pt,portrait]{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage{qrcode}
@@ -52,5 +52,11 @@ read -r -d '' input << EOF
 
 \end{document}
 EOF
+err=$?
 
-echo "$input"
+printf "\n"
+if [ "$err" -ne 0 ]; then
+  printf "\e[33mFailed. See errors above.\e[0m\n"
+  exit $err
+fi
+printf "\e[32mFinished (see ./robot_tag.pdf)\e[0m\n"
