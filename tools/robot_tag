@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
 #
-# Tools for making QR tags to stick on robots
+# Tools for making QR tags to stick on robots. Usage is:
+#   robot_tag \
+#     <title to put on pdf> \
+#     <contact email to put on pdf> \
+#     <url for the QR tag to point to>
 
+if [ $# -ne 3 ]; then
+  printf "\e[31m%s\n\t%s\e[0m\n" \
+    "Invalid arguments. Script requires precisely 3 arguments:" \
+    "robot_tag TITLE CONTACT_EMAIL TARGET_URL"
+  exit 1
+fi
 echo "Making a tag...."
