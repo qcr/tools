@@ -20,7 +20,7 @@ if [ $# -ne 3 ]; then
   exit 1
 fi
 
-printf "\e[31m%s\e[0m\n" "Fetching dependencies"
+printf "\e[32m%s\e[0m\n" "Fetching dependencies"
 # sudo apt install -y \
 #   wget
 #   pdflatex
@@ -34,38 +34,38 @@ printf "\e[32m%s\n\t%s\t\t%s\n\t%s\t\t%s\n\t%s\t%s\e[0m\n\n" \
 
 pushd "$TMP_DIR"
 pdflatex -jobname="$JOBNAME" << EOF
-\documentclass[24pt,portrait]{beamer}
-\usepackage[utf8]{inputenc}
-\usepackage{qrcode}
-\usepackage[orientation=portrait,size=a0,scale=6,debug]{beamerposter}
+\\documentclass[24pt,portrait]{beamer}
+\\usepackage[utf8]{inputenc}
+\\usepackage{qrcode}
+\\usepackage[orientation=portrait,size=a0,scale=6,debug]{beamerposter}
 
-\setbeamertemplate{caption}{\raggedright\insertcaption\par}
-\usefonttheme{structurebold}
+\\setbeamertemplate{caption}{\\raggedright\\insertcaption\\par}
+\\usefonttheme{structurebold}
 
-\title{$1}
-\author{QUT Centre for Robotics}
-\date{April 2021}
+\\title{$1}
+\\author{QUT Centre for Robotics}
+\\date{April 2021}
 
-\usepackage{natbib}
-\usepackage{graphicx}
+\\usepackage{natbib}
+\\usepackage{graphicx}
 
-\begin{document}
-\includegraphics[width=1.0\textwidth]{$IMAGE_TMP}
-\centering
-\vspace{-2cm}\\
-\fontsize{200}{7.2}\selectfont \textbf{$1}\\
-\vspace{1cm}
-\color{red}\fontsize{140}{7.2}\selectfont {Scan me before use!}\\
-\color{black}
-\vspace{2cm}
-\begin{figure}[h!]
-\centering
-\hspace{10mm}\qrcode[height=75cm]{$3}
-\vspace{2cm}
-\caption{Don't have access? Email $2}
-\end{figure}
+\\begin{document}
+\\includegraphics[width=1.0\\textwidth]{$IMAGE_TMP}
+\\centering
+\\vspace{-2cm}\\\\
+\\fontsize{200}{7.2}\\selectfont \\textbf{$1}\\\\
+\\vspace{1cm}
+\\color{red}\\fontsize{140}{7.2}\\selectfont {Scan me before use!}\\\\
+\\color{black}
+\\vspace{2cm}
+\\begin{figure}[h!]
+\\centering
+\\hspace{10mm}\\qrcode[height=75cm]{$3}
+\\vspace{2cm}
+\\caption{Don't have access? Email $2}
+\\end{figure}
 
-\end{document}
+\\end{document}
 EOF
 err=$?
 
