@@ -2,33 +2,39 @@
 
 This repository contains useful **private** tools for use by members of QCR. Please consider carefully how you use them, who you share them with, as they are not built for widespread use.
 
-## The `qcr_tools` script
+## The `qcr` script
 
-This script allows you to run the latest version of any of our internal tools, at any time in the future. Simply download the script to `~/bin/` and make it executable:
-
-```
-wget https://github.com/qcr/tools/raw/master/qcr_tools && chmod a+x qcr_tools
-```
-
-You can then run any tool in [this directory](https://github.com/qcr/tools/tree/master/tools) via the following syntax:
+This is a standalone script allowing you to run the latest version of any of our internal tools, at any time in the future. No need to clone a repo, no need to periodically fetch, no need to re-download at a later date for updates. Simply download the script to somewhere on your PATH (`~/bin/` is the conventional place to put a script like this), and make it executable:
 
 ```
-qcr_tools TOOL_NAME TOOL_ARG1 TOOL_ARG2 ...
+wget https://github.com/qcr/tools/raw/master/qcr && chmod a+x qcr
+```
+
+The script will run the latest version of any tool in [this directory](https://github.com/qcr/tools/tree/master/tools) via the following syntax:
+
+```
+qcr TOOL_NAME TOOL_ARG1 TOOL_ARG2 ...
 ```
 
 For example, the following will run the tool for making tags to place on QCR robots:
 
 ```
-qcr_tools robot_tag "Your title" "your.email@qut.edu.au" "https://your/target/page"
+qcr robot_tag "Your title" "your.email@qut.edu.au" "https://your/target/page"
+```
+
+Or to start a new ROS project using one of [our code templates](https://github.com/qcr/code_templates):
+
+```
+qcr template ros_package
 ```
 
 ### Adding your own tools
 
-Simply add a new bash script to the `./tools/` directory of this repository, and push it on the `master` branch. It will then be available for all users of the `qcr_tools` script.
+Simply add a new bash script to the `./tools/` directory of this repository, and push it on the `master` branch. It will then be available for all users of the `qcr` script.
 
 ## Miscellaneous notes for QCR users
 
-Below is an ad-hoc list of useful things for QCR members when using GitHub. The list may become more formalised as our utilisation of GitHub increases.
+Below is an ad-hoc list of useful things for QCR members when using GitHub. The list may become more than a random brain dump as our utilisation of GitHub increases.
 
 ### Adding action files to your repositories
 
