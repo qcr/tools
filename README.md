@@ -3,8 +3,8 @@
 This repository contains the `qcr` script which allows access to useful **private** tools for use by members of QCR. Please consider carefully how you use this script, who you share it with, as the tools themselves are not built for widespread use.
 
 Tools accessible by the `qcr` script include:
-- **create_tag** - allows the generation of a QR-QCR tag linked to a URL
-- **template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates)
+- **create_tag** - allows the generation of a QR-QCR tag linked to a URL (creator [btalb](https://github.com/btalb))
+- **template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (creator [btalb](https://github.com/btalb))
 
 ## The QCR Script
 
@@ -39,10 +39,23 @@ Or to start a new ROS project using one of [our code templates](https://github.c
 qcr template ros_package
 ```
 
-### Adding your own tools
+### Adding Your Own Tools
 
-Simply add a new bash script to the `./tools/` directory of this repository, and push it on the `master` branch. It will then be available for all users of the `qcr` script.
+To add a new tool:
 
+1. Clone this repository to your computer and make sure you are on the `master` branch
+2. Add the new bash tool script to the `./tools/` directory of this repository
+3. Make sure your script is well documented, at the very least include a description/example on how to use it within the script itself
+4. Update this ReadMe to include your tool within the list of accessible tools, along with a description and your GitHub user handle
+5. Push the changes to the `master` branch.
+
+### Reporting Tool Issues
+
+Please use the [GitHub Issues](https://github.com/qcr/tools/issues) associated with this repository to highlight any issues with a tool or if you believe a tool's feature set should be expanded. Make sure to mention the creator of the tool using their GitHub user handle.
+
+
+<!-- Just here to add some whitespace before the random stuff below -->
+<br />
 <br />
 <br />
 <br />
