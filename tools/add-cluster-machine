@@ -8,7 +8,7 @@ export PATH=$PATH:/home/$USER/.local/bin
 
 gpuview service --port 8080 --table-only
 
-for machine in $(curl -s https://raw.githubusercontent.com/qcr/gpu-cluster/main/machines); do 
+for machine in $(curl -s -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/qcr/gpu-cluster/main/machines); do 
     if [ "$(hostname)" != "$machine" ]; then 
       echo "Adding $machine"
       gpuview add --url http://${machine}.qut.edu.au:8080 --name $machine
