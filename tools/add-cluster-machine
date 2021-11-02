@@ -1,0 +1,18 @@
+#!/bin/bash
+
+sudo apt install -y curl python3-pip
+
+pip install git+https://github.com/qcr/gpuview.git@main
+
+export PATH=$PATH:/home/$USER/.local/bin
+
+gpuview service --port 8080 --table-only
+
+for machine in $(curl -s https://raw.githubusercontent.com/suddrey-qut/gpu-cluster/main/machines); do 
+    if [ "$(hostname)" != "$machine" ]; then 
+      echo "Adding $machine"
+      gpuview add --url http://${machine}.qut.edu.au:8080 --name $machine
+    fi
+done
+
+echo 'Finished'
