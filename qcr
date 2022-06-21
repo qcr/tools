@@ -11,6 +11,12 @@
 # Author: Ben Talbot
 # Version: 0.3.0
 
+if [[ "$(curl -w "%{url_effective}\n" -I -L -s -S google.com -o /dev/null)" =~ ^http://ias.qut.edu.au* ]]; then
+  printf "\e[31m%s\n%s\e[0m" \
+    "Internet access not authorised."
+  exit 1
+fi
+
 if [ -z "$1" ]; then
   printf "\e[31m%s\n\t%s\e[0m\n" \
     "No tool name provided. Please pick from one of these scripts:" \
