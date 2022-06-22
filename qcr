@@ -13,6 +13,11 @@
 
 set -euo pipefail
 
+################################################################################
+############################### Script settings ################################
+################################################################################
+
+
 INSTALL_DIR="/var/tmp/"
 REPO_DIR="${INSTALL_DIR}qcr"
 REPO_URL="https://github.com/qcr/tools"
@@ -21,6 +26,10 @@ INFO='\033[0;35m[INFO] '
 WARN='\033[0;33m[WARN] '
 ERROR='\033[0;31m[ERROR] '
 NC='\033[0m'
+
+################################################################################
+################################ Main execution ################################
+################################################################################
 
 # Install if not installed
 if [ ! -d "$REPO_DIR" ]; then
@@ -54,7 +63,5 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-tool="$1"
-shift
-bash <(curl -s -L --compressed \
-    https://github.com/qcr/tools/raw/master/tools/$tool ) "$@"
+# Process arguments, and divert to sub-scripts as appropriate
+# TODO
