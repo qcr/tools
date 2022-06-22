@@ -64,7 +64,10 @@ FURTHER DETAILS:
 ################################################################################
 
 # Bail if git isn't found
-# TODO
+command -v git >& /dev/null || {
+  printf "${ERROR}%s${NC}\n" "Command 'git' was not found, please install"
+  exit 1
+}
 
 # Install if not installed
 if [ ! -d "$REPO_DIR" ]; then
