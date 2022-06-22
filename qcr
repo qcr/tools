@@ -15,14 +15,24 @@ set -euo pipefail
 
 INSTALL_DIR="/var/tmp/"
 REPO_DIR="${INSTALL_DIR}qcr"
+REPO_URL="https://github.com/qcr/tools"
 
-WARN='\033[0;33m'
+INFO='\033[0;35m[INFO] '
+WARN='\033[0;33m[WARN] '
+ERROR='\033[0;31m[ERROR] '
 NC='\033[0m'
 
 # Install if not installed
 if [ ! -d "$REPO_DIR" ]; then
-  echo "INSTALLING"
+  printf "${INFO}%s${NC}\n" \
+    "No cached version found. Installing to '$REPO_DIR'..."
+  if ! git clone "$REPO_URL" "$REPO_DIR"; then
+    printf "${ERROR}%s${NC}\n" \
+      "Install failed, please ensure machine has internet access."
+    exit 1
+  fi
 fi
+exit 0
 
 # Check whether installed version is the latest (flagging if there are updates
 # available, or update check failed)
@@ -30,13 +40,12 @@ latest="1"
 installed=""
 if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
-    "WARN: Check for latest tools failed; using cached version in '$REPO_DIR'"
+    "Check for latest tools failed; using cached version in '$REPO_DIR'"
 elif [ "$latest" != "$installed" ]; then
   printf "${WARN}%s\n%s${NC}\n" \
-    "WARN: Old version (${installed}) of tools found in '$REPO_DIR'" \
+    "Old version (${installed}) of tools found in '$REPO_DIR'" \
     "(update to version ${latest} using COMMAND)"
 fi
-exit 0
 
 # Process the requested command
 
