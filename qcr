@@ -24,14 +24,47 @@ REPO_DIR="${INSTALL_DIR}/qcr"
 REPO_URL="https://github.com/qcr/tools"
 SCRIPTS_DIR="${REPO_DIR}/scripts"
 
+################################################################################
+########################### Variables and functions ############################
+################################################################################
+
 INFO='\033[0;35m[INFO] '
 WARN='\033[0;33m[WARN] '
 ERROR='\033[0;31m[ERROR] '
 NC='\033[0m'
 
+usage_text="$(basename "$abs_path") -- QCR script for access to all our shared tools
+
+USAGE:
+
+    Run a command located in $REPO_DIR/scripts/my_command:
+        $(basename "$abs_path") my_command
+
+    Run a subcommand located in $REPO_DIR/scripts/my_commands/subcommand
+        $(basename "$abs_path") my_commands subcommand
+
+    Print this help text:
+        $(basename "$abs_path") --help
+
+OPTION DETAILS:
+
+    -h, --help
+            Show this help menu.
+
+
+FURTHER DETAILS:
+
+    Please open an issue in the QCR tools repository for questions, support, or
+    to report bugs:
+        https://github.com/qcr/tools/issues
+"
+
 ################################################################################
 ################################ Main execution ################################
 ################################################################################
+
+# Bail if git isn't found
+# TODO
 
 # Install if not installed
 if [ ! -d "$REPO_DIR" ]; then
@@ -61,11 +94,29 @@ fi
 
 # Split args into what is parsed here, and what goes to a subcommand
 sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | \
-  head -n 1 | cut -f1 -d: || echo "0")
-main_args=( "${@:0:$sub_index}")
+  head -n 1 | cut -f1 -d: || echo "$(($#+1))")
+main_args=( "${@:1:$((sub_index-1))}")
 sub_args=( "${@:$sub_index}" )
-exit 0
 
-# Process arguments, and divert to sub-scripts as appropriate
-parsed=$(getopt -o h --long help -n "$(basename "$abs_path")" -- "$@")
-echo "SUCCESS"
+# Process main command arguments
+parsed=$(getopt -o h --long help -n "$(basename "$abs_path")" \
+  -- "${main_args[@]}")
+eval set -- "$parsed"
+while true; do
+  case "$1" in
+    -h|--help)
+      echo "$usage_text" ; exit 0 ;;
+    --)
+      shift ; break ;;
+    *)
+      # We'll never get here
+      printf "${ERROR}%s\n${NC}" \
+        "Option '$1' to '$(basename "$abs_path")' is unknown" ; shift; exit 1 ;;
+  esac
+done
+
+# Divert to selected subcommand
+# TODO
+
+# If we're here, print the list of available commands and exit
+# TODO
