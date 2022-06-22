@@ -12,6 +12,7 @@
 # Version: 0.4.0
 
 set -euo pipefail
+abs_path="$(readlink -f $0)"
 
 ################################################################################
 ############################### Script settings ################################
@@ -58,5 +59,13 @@ elif [ "$latest" != "$installed" ]; then
     "qcr update"
 fi
 
+# Split args into what is parsed here, and what goes to a subcommand
+sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | \
+  head -n 1 | cut -f1 -d: || echo "0")
+main_args=( "${@:0:$sub_index}")
+sub_args=( "${@:$sub_index}" )
+exit 0
+
 # Process arguments, and divert to sub-scripts as appropriate
-ls "$SCRIPTS_DIR"
+parsed=$(getopt -o h --long help -n "$(basename "$abs_path")" -- "$@")
+echo "SUCCESS"
