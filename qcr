@@ -40,19 +40,11 @@ latest="1"
 installed=""
 if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
-    "Check for latest tools failed; using cached version in '$REPO_DIR'"
+    "Check for latest tools failed; using cached version in '$REPO_DIR'."
 elif [ "$latest" != "$installed" ]; then
   printf "${WARN}%s\n%s${NC}\n" \
     "Old version (${installed}) of tools found in '$REPO_DIR'" \
-    "(update to version ${latest} using COMMAND)"
-fi
-
-# Process the requested command
-
-if [[ "$(curl -w "%{url_effective}\n" -I -L -s -S google.com -o /dev/null)" =~ ^http://ias.qut.edu.au* ]]; then
-  printf "\e[31m%s\n%s\e[0m" \
-    "Internet access not authorised."
-  exit 1
+    "(update to version ${latest} using COMMAND)."
 fi
 
 if [ -z "$1" ]; then
