@@ -52,10 +52,10 @@ if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
     "Check for latest tools failed; using cached version in '$REPO_DIR'."
 elif [ "$latest" != "$installed" ]; then
-  printf "${WARN}%s%s\n\t%s${NC}\n" \
-    "Old version (${installed:0:8}) of tools found in '$REPO_DIR'. " \
-    "Update to ${latest:0:8} using:" \
-    "TODO: COMMAND"
+  printf "${WARN}%s%s\n\t\t%s${NC}\n" \
+    "Old version (${installed:0:8}) found in '$REPO_DIR'. " \
+    "Update to latest (${latest:0:8}) using:" \
+    "qcr update"
 fi
 
 # Process arguments, and divert to sub-scripts as appropriate
