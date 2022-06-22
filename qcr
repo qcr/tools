@@ -18,9 +18,10 @@ set -euo pipefail
 ################################################################################
 
 
-INSTALL_DIR="/var/tmp/"
-REPO_DIR="${INSTALL_DIR}qcr"
+INSTALL_DIR="/var/tmp"
+REPO_DIR="${INSTALL_DIR}/qcr"
 REPO_URL="https://github.com/qcr/tools"
+SCRIPTS_DIR="${REPO_DIR}/scripts"
 
 INFO='\033[0;35m[INFO] '
 WARN='\033[0;33m[WARN] '
@@ -41,12 +42,12 @@ if [ ! -d "$REPO_DIR" ]; then
     exit 1
   fi
 fi
-exit 0
 
 # Check whether installed version is the latest (flagging if there are updates
 # available, or update check failed)
-latest="1"
-installed=""
+latest="$(git -C "$REPO_DIR" ls-remote 2>/dev/null | \
+  grep HEAD | cut -f 1 || true)"
+installed="$(git -C "$REPO_DIR" rev-parse HEAD)"
 if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
     "Check for latest tools failed; using cached version in '$REPO_DIR'."
@@ -56,12 +57,5 @@ elif [ "$latest" != "$installed" ]; then
     "(update to version ${latest} using COMMAND)."
 fi
 
-if [ -z "$1" ]; then
-  printf "\e[31m%s\n\t%s\e[0m\n" \
-    "No tool name provided. Please pick from one of these scripts:" \
-    "https://github.com/qcr/tools/blob/master/tools/"
-  exit 1
-fi
-
 # Process arguments, and divert to sub-scripts as appropriate
-# TODO
+ls "$SCRIPTS_DIR"
