@@ -126,7 +126,14 @@ cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub_args[@]}" == "$c "* ]] || [[ "${sub_args[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
   awk '{ print NF, $0 }' | sort -n | cut -d' ' -f 2-)"
-echo "$cmd"
 
+if [ -z "$cmd" ]; then
+  if [ ${#sub_args[@]} -gt 0 ]; then
+    printf "${ERROR}No command matched '${sub_args[@]}'.${NC}\n\n"
+  fi
+  printf '%s\n' \
+    'Please make a call that matches one of the following available commands'
+  printf '%s\n' "${cmds[@]}" | sed 's/^/\t/'
+fi
 # If we're here, print the list of available commands and exit
 # TODO
