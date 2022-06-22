@@ -118,8 +118,15 @@ while true; do
   esac
 done
 
-# Divert to selected subcommand
-# TODO
+# Divert to selected command
+# TODO add support for sub-commands
+cmds="$(find "$SCRIPTS_DIR" -executable -type f | \
+  sed "s|^$SCRIPTS_DIR/||; s|/| |g")"
+cmd="$(echo "$cmds" | while read c; do \
+  [[ "${sub_args[@]}" == "$c "* ]] || [[ "${sub_args[@]}" == "$c" ]] && \
+    echo "$c" || true; done | \
+  awk '{ print NF, $0 }' | sort -n | cut -d' ' -f 2-)"
+echo "$cmd"
 
 # If we're here, print the list of available commands and exit
 # TODO
