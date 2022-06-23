@@ -1,30 +1,123 @@
 #!/usr/bin/env bash
 #
-# A light wrapper for using QCR tools. This is deliberately light, so that
-# users should never have to update this script once they have it, but will
-# always have access to the latest templates.
-#
-# Please see https://github.com/qcr/tools for full details on how things work,
-# and instructions on how to add your own templates. The more templates the
-# merrier!
-#
-# Author: Ben Talbot
-# Version: 0.3.0
+# This is the main script where all of the "work" happens. It can be used
+# directly in a normal workflow (e.g. symlink into ~/bin, or add to $PATH,
+# etc). 
+# 
+# This is also invoked by the `qcr_standalone` wrapping script.
 
-if [[ "$(curl -w "%{url_effective}\n" -I -L -s -S google.com -o /dev/null)" =~ ^http://ias.qut.edu.au* ]]; then
-  printf "\e[31m%s\n%s\e[0m" \
-    "Internet access not authorised."
+set -euo pipefail
+_this="$(readlink -f $0)"
+_this_dir="$(dirname "$_this")"
+
+
+################################################################################
+########################### Variables and functions ############################
+################################################################################
+
+INFO='\033[0;35m[INFO] '
+WARN='\033[0;33m[WARN] '
+ERROR='\033[0;31m[ERROR] '
+NC='\033[0m'
+
+usage_text="$(basename "$_this") -- QCR script for access to all our shared tools
+
+USAGE:
+
+    Run a command located in $_this_dir/scripts/my_command:
+        $(basename "$_this") my_command
+
+    Run a subcommand located in $_this_dir/scripts/my_commands/subcommand
+        $(basename "$_this") my_commands subcommand
+
+    Print this help text:
+        $(basename "$_this") --help
+
+OPTION DETAILS:
+
+    -h, --help
+            Show this help menu.
+
+
+FURTHER DETAILS:
+
+    Please open an issue in the QCR tools repository for questions, support, or
+    to report bugs:
+        https://github.com/qcr/tools/issues
+"
+
+################################################################################
+################################ Main execution ################################
+################################################################################
+
+# Bail if git isn't found
+command -v git >& /dev/null || {
+  printf "${ERROR}%s${NC}\n" "Command 'git' was not found, please install"
+  exit 1
+}
+
+# Check whether installed version is the latest (flagging if there are updates
+# available, or update check failed)
+latest="$(git -C "$_this_dir" ls-remote 2>/dev/null | \
+  grep HEAD | cut -f 1 || true)"
+installed="$(git -C "$_this_dir" rev-parse HEAD)"
+if [ -z "$latest" ]; then
+  printf "${WARN}%s${NC}\n" \
+    "Check for latest tools failed; using cached version in '$_this_dir'."
+elif [ "$latest" != "$installed" ]; then
+  printf "${WARN}%s%s\n\t%s${NC}\n\n" \
+    "Old version (${installed:0:8}) found in '$_this_dir'. " \
+    "Update to latest (${latest:0:8}) using:" \
+    "qcr update"
+fi
+
+# Split args into what is parsed here, and what goes to a subcommand
+sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | \
+  head -n 1 | cut -f1 -d: || echo "$(($#+1))")
+main_args=( "${@:1:$((sub_index-1))}")
+sub=( "${@:$sub_index}" )
+
+# Process main command arguments
+parsed=$(getopt -o h --long help -n "$(basename "$_this")" \
+  -- "${main_args[@]}")
+eval set -- "$parsed"
+while true; do
+  case "$1" in
+    -h|--help)
+      echo "$usage_text" ; exit 0 ;;
+    --)
+      shift ; break ;;
+    *)
+      # We'll never get here
+      printf "${ERROR}%s\n${NC}" \
+        "Option '$1' to '$(basename "$_this")' is unknown" ; shift; exit 1 ;;
+  esac
+done
+
+# Divert to selected command
+# TODO add support for sub-commands
+scripts_dir="$_this_dir/scripts"
+cmds="$(find "$scripts_dir" -executable -type f | \
+  sed "s|^$scripts_dir/||; s|/| |g")"
+cmd="$(echo "$cmds" | while read c; do \
+  [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
+    echo "$c" || true; done | \
+  awk '{ print NF, $0 }' | sort -n | cut -d' ' -f 2-)"
+
+if [ -z "$cmd" ]; then
+  if [ ${#sub[@]} -gt 0 ]; then
+    printf "\n${ERROR}No command matched '${sub[@]}'.${NC}\n\n"
+  fi
+  printf '%s\n' \
+    'Please make a call that matches one of the following available commands'
+  printf '%s\n' "${cmds[@]}" | sed 's/^/\t/'
   exit 1
 fi
 
-if [ -z "$1" ]; then
-  printf "\e[31m%s\n\t%s\e[0m\n" \
-    "No tool name provided. Please pick from one of these scripts:" \
-    "https://github.com/qcr/tools/blob/master/tools/"
-  exit 1
-fi
-
-tool="$1"
-shift
-bash <(curl -s -L --compressed \
-    https://github.com/qcr/tools/raw/master/tools/$tool ) "$@"
+# Execute the command
+# TODO add support for sub-commands
+sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
+sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
+printf "${INFO}Calling '$sub_cmd' with args '%s'${NC}\n" \
+  "$(echo "${sub_args[@]}")"
+$sub_cmd "${sub_args[@]}"

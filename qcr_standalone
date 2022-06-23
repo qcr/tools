@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+# A light wrapper for using QCR tools. This is deliberately light, so that
+# users should never have to update this script once they have it, but will
+# always have access to the latest tools.
+#
+# It is also designed to work offline, and prompt you when updates are
+# available. Please see https://github.com/qcr/tools for full details on how
+# things work.
+#
+# Author: Ben Talbot
+# Version: 0.5.0
+
+set -euo pipefail
+
+INSTALL_DIR="/var/tmp"
+REPO_DIR="${INSTALL_DIR}/qcr"
+REPO_URL="https://github.com/qcr/tools"
+
+INFO='\033[0;35m[INFO] '
+ERROR='\033[0;31m[ERROR] '
+NC='\033[0m'
+
+# Bail if git isn't found
+command -v git >& /dev/null || {
+  printf "${ERROR}%s${NC}\n" "Command 'git' was not found, please install"
+  exit 1
+}
+
+# Install if not installed
+if [ ! -d "$REPO_DIR" ]; then
+  printf "${INFO}%s${NC}\n" \
+    "No cached version found. Installing to '$REPO_DIR'..."
+  if ! git clone "$REPO_URL" "$REPO_DIR"; then
+    printf "${ERROR}%s${NC}\n" \
+      "Install failed, please ensure machine has Internet access."
+    exit 1
+  fi
+fi
+
+# Defer to the main script
+$REPO_DIR/qcr "$@"
