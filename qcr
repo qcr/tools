@@ -143,4 +143,4 @@ sub_cmd="$SCRIPTS_DIR/$(echo "$cmd" | sed 's/ /\//g')"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 printf "${INFO}Calling '$sub_cmd' with args '%s'${NC}\n" \
   "$(echo "${sub_args[@]}")"
-# $sub_cmd "${sub_args[@]}"
+$sub_cmd "${sub_args[@]}"
