@@ -89,7 +89,7 @@ if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
     "Check for latest tools failed; using cached version in '$REPO_DIR'."
 elif [ "$latest" != "$installed" ]; then
-  printf "${WARN}%s%s\n\t\t%s${NC}\n" \
+  printf "${WARN}%s%s\n\t%s${NC}\n" \
     "Old version (${installed:0:8}) found in '$REPO_DIR'. " \
     "Update to latest (${latest:0:8}) using:" \
     "qcr update"
@@ -99,7 +99,7 @@ fi
 sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | \
   head -n 1 | cut -f1 -d: || echo "$(($#+1))")
 main_args=( "${@:1:$((sub_index-1))}")
-sub_args=( "${@:$sub_index}" )
+sub=( "${@:$sub_index}" )
 
 # Process main command arguments
 parsed=$(getopt -o h --long help -n "$(basename "$abs_path")" \
@@ -123,17 +123,19 @@ done
 cmds="$(find "$SCRIPTS_DIR" -executable -type f | \
   sed "s|^$SCRIPTS_DIR/||; s|/| |g")"
 cmd="$(echo "$cmds" | while read c; do \
-  [[ "${sub_args[@]}" == "$c "* ]] || [[ "${sub_args[@]}" == "$c" ]] && \
+  [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
   awk '{ print NF, $0 }' | sort -n | cut -d' ' -f 2-)"
 
 if [ -z "$cmd" ]; then
-  if [ ${#sub_args[@]} -gt 0 ]; then
-    printf "${ERROR}No command matched '${sub_args[@]}'.${NC}\n\n"
+  if [ ${#sub[@]} -gt 0 ]; then
+    printf "\n${ERROR}No command matched '${sub[@]}'.${NC}\n\n"
   fi
   printf '%s\n' \
     'Please make a call that matches one of the following available commands'
   printf '%s\n' "${cmds[@]}" | sed 's/^/\t/'
+  exit 1
 fi
-# If we're here, print the list of available commands and exit
-# TODO
+
+# Execute the command
+echo "Executing '$cmd'"
