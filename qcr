@@ -1,28 +1,15 @@
 #!/usr/bin/env bash
 #
-# A light wrapper for using QCR tools. This is deliberately light, so that
-# users should never have to update this script once they have it, but will
-# always have access to the latest tools.
-#
-# It is also designed to work offline, and prompt you when updates are
-# available. Please see https://github.com/qcr/tools for full details on how
-# things work.
-#
-# Author: Ben Talbot
-# Version: 0.4.0
+# This is the main script where all of the "work" happens. It can be used
+# directly in a normal workflow (e.g. symlink into ~/bin, or add to $PATH,
+# etc). 
+# 
+# This is also invoked by the `qcr_standalone` wrapping script.
 
 set -euo pipefail
-abs_path="$(readlink -f $0)"
+_this="$(readlink -f $0)"
+_this_dir="$(dirname "$_this")"
 
-################################################################################
-############################### Script settings ################################
-################################################################################
-
-
-INSTALL_DIR="/var/tmp"
-REPO_DIR="${INSTALL_DIR}/qcr"
-REPO_URL="https://github.com/qcr/tools"
-SCRIPTS_DIR="${REPO_DIR}/scripts"
 
 ################################################################################
 ########################### Variables and functions ############################
@@ -33,18 +20,18 @@ WARN='\033[0;33m[WARN] '
 ERROR='\033[0;31m[ERROR] '
 NC='\033[0m'
 
-usage_text="$(basename "$abs_path") -- QCR script for access to all our shared tools
+usage_text="$(basename "$_this") -- QCR script for access to all our shared tools
 
 USAGE:
 
-    Run a command located in $REPO_DIR/scripts/my_command:
-        $(basename "$abs_path") my_command
+    Run a command located in $_this_dir/scripts/my_command:
+        $(basename "$_this") my_command
 
-    Run a subcommand located in $REPO_DIR/scripts/my_commands/subcommand
-        $(basename "$abs_path") my_commands subcommand
+    Run a subcommand located in $_this_dir/scripts/my_commands/subcommand
+        $(basename "$_this") my_commands subcommand
 
     Print this help text:
-        $(basename "$abs_path") --help
+        $(basename "$_this") --help
 
 OPTION DETAILS:
 
@@ -69,28 +56,17 @@ command -v git >& /dev/null || {
   exit 1
 }
 
-# Install if not installed
-if [ ! -d "$REPO_DIR" ]; then
-  printf "${INFO}%s${NC}\n" \
-    "No cached version found. Installing to '$REPO_DIR'..."
-  if ! git clone "$REPO_URL" "$REPO_DIR"; then
-    printf "${ERROR}%s${NC}\n" \
-      "Install failed, please ensure machine has internet access."
-    exit 1
-  fi
-fi
-
 # Check whether installed version is the latest (flagging if there are updates
 # available, or update check failed)
-latest="$(git -C "$REPO_DIR" ls-remote 2>/dev/null | \
+latest="$(git -C "$_this_dir" ls-remote 2>/dev/null | \
   grep HEAD | cut -f 1 || true)"
-installed="$(git -C "$REPO_DIR" rev-parse HEAD)"
+installed="$(git -C "$_this_dir" rev-parse HEAD)"
 if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
-    "Check for latest tools failed; using cached version in '$REPO_DIR'."
+    "Check for latest tools failed; using cached version in '$_this_dir'."
 elif [ "$latest" != "$installed" ]; then
-  printf "${WARN}%s%s\n\t%s${NC}\n" \
-    "Old version (${installed:0:8}) found in '$REPO_DIR'. " \
+  printf "${WARN}%s%s\n\t%s${NC}\n\n" \
+    "Old version (${installed:0:8}) found in '$_this_dir'. " \
     "Update to latest (${latest:0:8}) using:" \
     "qcr update"
 fi
@@ -102,7 +78,7 @@ main_args=( "${@:1:$((sub_index-1))}")
 sub=( "${@:$sub_index}" )
 
 # Process main command arguments
-parsed=$(getopt -o h --long help -n "$(basename "$abs_path")" \
+parsed=$(getopt -o h --long help -n "$(basename "$_this")" \
   -- "${main_args[@]}")
 eval set -- "$parsed"
 while true; do
@@ -114,14 +90,15 @@ while true; do
     *)
       # We'll never get here
       printf "${ERROR}%s\n${NC}" \
-        "Option '$1' to '$(basename "$abs_path")' is unknown" ; shift; exit 1 ;;
+        "Option '$1' to '$(basename "$_this")' is unknown" ; shift; exit 1 ;;
   esac
 done
 
 # Divert to selected command
 # TODO add support for sub-commands
-cmds="$(find "$SCRIPTS_DIR" -executable -type f | \
-  sed "s|^$SCRIPTS_DIR/||; s|/| |g")"
+scripts_dir="$_this_dir/scripts"
+cmds="$(find "$scripts_dir" -executable -type f | \
+  sed "s|^$scripts_dir/||; s|/| |g")"
 cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
@@ -139,7 +116,7 @@ fi
 
 # Execute the command
 # TODO add support for sub-commands
-sub_cmd="$SCRIPTS_DIR/$(echo "$cmd" | sed 's/ /\//g')"
+sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 printf "${INFO}Calling '$sub_cmd' with args '%s'${NC}\n" \
   "$(echo "${sub_args[@]}")"
