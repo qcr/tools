@@ -127,7 +127,12 @@ for a in "${sub_args[@]}"; do
 done
 
 if [ $help -eq 0 ]; then
-  echo "HELP"
+  doc="$(cat scripts/cmd | \
+    sed -n '/^[^#]\?$/q; s/^# \?//; 1{/^!\//d}; /./,$!d; p')"
+  [ -n "$doc" ] && echo "$doc" || \
+    printf "${ERROR}%s\n\t%s${NC}\n\n" \
+    "No help documentation found. Request documentation from the author here:" \
+    "https://github.com/qcr/tools/issues"
 else
   $sub_cmd "${sub_args[@]}"
 fi
