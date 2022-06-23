@@ -120,4 +120,14 @@ sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 printf "${INFO}Calling '$sub_cmd'%s${NC}\n\n" \
   "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
-$sub_cmd "${sub_args[@]}"
+
+help=1
+for a in "${sub_args[@]}"; do 
+  [[ "$a" == "--help" ]] || [[ "$a" == "-h" ]] && help=0
+done
+
+if [ $help -eq 0 ]; then
+  echo "HELP"
+else
+  $sub_cmd "${sub_args[@]}"
+fi
