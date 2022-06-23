@@ -118,6 +118,6 @@ fi
 # TODO add support for sub-commands
 sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
-printf "${INFO}Calling '$sub_cmd' with args '%s'${NC}\n" \
-  "$(echo "${sub_args[@]}")"
+printf "${INFO}Calling '$sub_cmd'%s${NC}\n\n" \
+  "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
 $sub_cmd "${sub_args[@]}"
