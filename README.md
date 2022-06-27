@@ -1,26 +1,49 @@
 # QCR Shared Tools
 
-This repository contains the `qcr` script which allows access to useful **private** tools for use by members of QCR. Please consider carefully how you use this script, who you share it with, as the tools themselves are not built for widespread use.
+This repository houses the `qcr` script, which allows simple direct access to technical tools used internally at QCR. Although this repository is public (for ease of installation), we don't expect these tools to be of use outside of QCR. Contributors to this repository should be aware that the repository is public, and choose what they commit accordingly.
 
-Tools accessible by the `qcr` script include:
+A list of the tools available can be found by simply running the `qcr` script. Some of the featured tools include:
 
+- **code_template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (creator [btalb](https://github.com/btalb))
 - **create_tag** - allows the generation of a QR-QCR tag linked to a URL (creator [btalb](https://github.com/btalb))
-- **template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (creator [btalb](https://github.com/btalb))
 
-## The QCR Script
+## Installation the tools
 
-This `qcr` script is standalone and allows you to run the latest version of any of our internal QCR tools, at any time in the future.
+There are two options for installation: standalone and Git-based. Standalone, is simplest, and allows you permanent access to latest version of the tools. A Git-based installation clones the repository and allows you deeper control of subscripts and installation.
 
-### Installation
+## Standalone installation
 
-There is no need to clone this repo to utilise the `qcr` script. To install the script perform the following:
+1. Pick a directory on your PATH (`~/bin/` is usually the best choice):
 
-1. Open a terminal and cd into your user bin directory: `cd ~/bin/` - see below if you don't have this directory
-2. Download the script, and make it executable: `wget https://github.com/qcr/tools/raw/master/qcr && chmod a+x qcr`
+```
+cd ~/bin/
+```
 
-If you don't have a `~/bin/` directory simpy create it by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will however, need to log out and then log back in to source it for the first time after you created it. We recommend you put any other user defined scripts that you want executable from any directory in `~/bin/`.
+2. Download the standalone script and make it executable:
 
-### Usage
+```
+wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod +x qcr
+```
+
+Done. QCR tools can now be used by simply running `qcr ...` from any location. A temporary copy of all the tools is stored in `/var/tmp/qcr` to support offline access.
+
+_Note: A `~/bin` directory can be created if it doesn't exist by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will need to log out and back in to source it for the first time after you create it. It's good practice to put any other user defined scripts that you want executable from any directory in `~/bin/`._
+
+## Git-based installation
+
+1. Clone the repository
+
+```
+git clone https://github.com/qcr/tools
+```
+
+2. Add the `qcr` script to somewhere on your PATH by creating a symbolic link:
+
+```
+ln -s <where_cloned_tools_repo>/qcr ~/bin/
+```
+
+## Usage
 
 The `qcr` script will run the latest version of any tool in [this directory](https://github.com/qcr/tools/tree/master/tools) via the following syntax:
 
