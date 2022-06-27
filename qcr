@@ -127,7 +127,7 @@ done
 
 if [ $help -eq 0 ]; then
   doc="$(cat "$sub_cmd" | \
-    sed -n '/^[^#]\?$/q; s/^# \?//; 1{/^!\//d}; /./,$!d; p')"
+    sed -n '/^[^#]/q; s/^# \?//; 1{/^!\//d}; /./,$!d; p')"
   [ -n "$doc" ] && echo "$doc" || \
     printf "${ERROR}%s\n\t%s${NC}\n\n" \
     "No help documentation found. Request documentation from the author here:" \
