@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#
+# My script for updating
+
+set -euo pipefail
+ 
+repo_dir="$(dirname "$(dirname "$0")")"
+latest="$(git -C "$repo_dir" ls-remote 2>/dev/null | \
+  grep HEAD | cut -f 1 || true)"
+printf "\nUpdating tools in '$repo_dir' to '${latest:0:8}...'\n\n"
+
+git -C "$repo_dir" stash
+git -C "$repo_dir" checkout "$latest"
+git -C "$repo_dir" stash pop || true
+
+printf "\nDone.\n"
