@@ -1,5 +1,9 @@
 # QCR Shared Tools
 
+[![QUT Centre for Robotics Open Source](https://github.com/qcr/qcr.github.io/raw/master/misc/badge.svg)](https://qcr.github.io)
+![Primary language](https://img.shields.io/github/languages/top/qcr/tools)
+[![License](https://img.shields.io/github/license/qcr/tools)](./LICENSE.txt)
+
 This repository houses the `qcr` script, which allows simple direct access to technical tools used internally at QCR. Although this repository is public (for ease of installation), we don't expect these tools to be of use outside of QCR. Contributors to this repository should be aware that the repository is public, and choose what they commit accordingly.
 
 A list of the tools available can be found by simply running the `qcr` script. Some of the featured tools include:
