@@ -121,7 +121,6 @@ sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 printf "${INFO}Calling '$sub_cmd'%s${NC}\n\n" \
   "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
-exit 0
 
 help=1
 for a in "${sub_args[@]}"; do 
@@ -129,7 +128,7 @@ for a in "${sub_args[@]}"; do
 done
 
 if [ $help -eq 0 ]; then
-  doc="$(cat scripts/cmd | \
+  doc="$(cat "$sub_cmd" | \
     sed -n '/^[^#]\?$/q; s/^# \?//; 1{/^!\//d}; /./,$!d; p')"
   [ -n "$doc" ] && echo "$doc" || \
     printf "${ERROR}%s\n\t%s${NC}\n\n" \
