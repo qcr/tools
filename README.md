@@ -25,7 +25,7 @@ cd ~/bin/
 wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod +x qcr
 ```
 
-Done. QCR tools can now be used by simply running `qcr ...` from any location. A temporary copy of all the tools is stored in `/var/tmp/qcr` to support offline access.
+Done. A temporary copy of all the tools will be stored in `/var/tmp/qcr` when you first run the `qcr` script to support offline access.
 
 _Note: A `~/bin` directory can be created if it doesn't exist by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will need to log out and back in to source it for the first time after you create it. It's good practice to put any other user defined scripts that you want executable from any directory in `~/bin/`._
 
@@ -45,7 +45,25 @@ ln -s <where_cloned_tools_repo>/qcr ~/bin/
 
 ## Using the script
 
-## What is actually going on
+Using the script is simple once it's on your PATH. Simply:
+
+```
+qcr --help
+```
+
+to list help information about the tool. Then
+
+```
+qcr
+```
+
+will print a list of the available tools. And finally, run a tool using:
+
+```
+qcr TOOL_NAME TOOL_ARG1 TOOL_ARG2
+```
+
+# What is actually going on
 
 The `qcr` script runs the latest version of any tool in [the ./scripts/ directory of this repository](https://github.com/qcr/tools/tree/master/scripts). It does this by translating the following syntax:
 
