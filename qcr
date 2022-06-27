@@ -98,7 +98,7 @@ done
 # TODO add support for sub-commands
 scripts_dir="$_this_dir/scripts"
 cmds="$(find "$scripts_dir" -executable -type f | \
-  sed "s|^$scripts_dir/||; s|/| |g")"
+  sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
 cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
@@ -117,9 +117,11 @@ fi
 # Execute the command
 # TODO add support for sub-commands
 sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
+[ -d "$sub_cmd" ] && sub_cmd="$sub_cmd/.command"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 printf "${INFO}Calling '$sub_cmd'%s${NC}\n\n" \
   "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
+exit 0
 
 help=1
 for a in "${sub_args[@]}"; do 
