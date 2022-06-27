@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 #
-# My script for updating
+# This script updates your installation of QCR's tools. It simply finds the
+# latest commit on master, stashes any changes you may have, checks out that
+# latest commit, then unstashes your changes.
+#
+# Note: that you will probably end in a detached head state after this.
 
 set -euo pipefail
  
