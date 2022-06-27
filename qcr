@@ -95,14 +95,13 @@ while true; do
 done
 
 # Divert to selected command
-# TODO add support for sub-commands
 scripts_dir="$_this_dir/scripts"
 cmds="$(find "$scripts_dir" -executable -type f | \
   sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
 cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
-  awk '{ print NF, $0 }' | sort -n | cut -d' ' -f 2-)"
+  awk '{ print NF, $0 }' | sort -n | cut -d' ' -f 2- | tail -n 1)"
 
 if [ -z "$cmd" ]; then
   if [ ${#sub[@]} -gt 0 ]; then
@@ -115,7 +114,6 @@ if [ -z "$cmd" ]; then
 fi
 
 # Execute the command
-# TODO add support for sub-commands
 sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
 [ -d "$sub_cmd" ] && sub_cmd="$sub_cmd/.command"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
