@@ -6,14 +6,14 @@
 
 ![QCR tools in action](https://github.com/qcr/tools/wiki/qcr_tools.png)
 
-This repository houses the `qcr` script, which allows simple direct access to technical tools used internally at QCR. Although this repository is public (for ease of installation), we don't expect these tools to be of use outside of QCR. Contributors to this repository should be aware that the repository is public, and choose what they commit accordingly.
+This repository contains the `qcr` script, which allows simple direct access to technical tools used internally at QCR. Although this repository is public for ease of installation, we don't expect these tools to be useful outside of QCR. Contributors to this repository should be aware that the repository is public, and choose what they commit accordingly.
 
 A list of the tools available can be found by simply running the `qcr` script. Some of the featured tools include:
 
 - **code_template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (creator [btalb](https://github.com/btalb))
 - **create_tag** - allows the generation of a QR-QCR tag linked to a URL (creator [btalb](https://github.com/btalb))
 
-## Installation the tools
+## Installing the tools
 
 There are two options for installation: standalone and Git-based. Standalone, is simplest, and allows you permanent access to latest version of the tools. A Git-based installation clones the repository and allows you deeper control of subscripts and installation.
 
@@ -51,22 +51,28 @@ ln -s <where_cloned_tools_repo>/qcr ~/bin/
 
 ## Using the script
 
-Using the script is simple once it's on your PATH. Simply:
+Using the script is simple once it's on your PATH. Any tool can be run via:
+
+```
+qcr TOOL_NAME TOOL_ARG1 TOOL_ARG2
+```
+
+Help information is also available for the main script:
 
 ```
 qcr --help
 ```
 
-to list help information about the tool. Then
+And all tools:
+
+```
+qcr TOOL_NAME --help
+```
+
+A list of available tools can also be seen by simply invoking the tool with no arguments:
 
 ```
 qcr
-```
-
-will print a list of the available tools. And finally, run a tool using:
-
-```
-qcr TOOL_NAME TOOL_ARG1 TOOL_ARG2
 ```
 
 # What is actually going on
@@ -89,12 +95,12 @@ Into the following command:
 That's the general principle. There a couple of special cases that help improve the tool's flexibility and usability:
 
 - when no tool name is provided the script will either:
-  - print a help menu for `qcr -h` or `qcr --help` calls
+  - print a help menu for `qcr -h` or `qcr --help` calls, or
   - print the list of available commands
-- when a tool name is provided the script will:
-  - select the deepest tool matching the start of the arguments, for example `qcr arg1 arg2 --arg3` will look for `./scripts/arg1/arg2` then `./scripts/arg1` then throw an error if none are found
-  - central commands for a tool can be specified in a file called `.command` (e.g. `./scripts/my_tool/{.command,mode_1,mode_2}` will support commands `qcr my_tool`, `qcr my_tool mode_1`, and `qcr my_tool mode_2`)
-  - the matched command will receive all args after those corresponding to the matched command (e.g. `qcr my_tool mode_1 -a -b` will call `./scripts/my_tool/mode_1` with args `-a -b` or `./scripts/my_tool` with args `mode_1 -a -b` if the former doesn't exist)
+- when a tool name is provided the script will go through the following process:
+  1. select the deepest tool matching the start of the arguments, for example `qcr arg1 arg2 --arg3` will look for `./scripts/arg1/arg2` then `./scripts/arg1` then throw an error if none are found
+  2. check if a central command has been requested in a file called `.command` (e.g. `./scripts/my_tool/{.command,mode_1,mode_2}` will support commands `qcr my_tool`, `qcr my_tool mode_1`, and `qcr my_tool mode_2`)
+  3. pass all remaining args to the matched command (e.g. `qcr my_tool mode_1 -a -b` will call `./scripts/my_tool/mode_1` with args `-a -b` or `./scripts/my_tool` with args `mode_1 -a -b` if the former doesn't exist)
 
 ## Adding Your Own Tools
 
