@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#
+# This script updates your installation of QCR's tools. It simply finds the
+# latest commit on master, stashes any changes you may have, checks out that
+# latest commit, then unstashes your changes.
+#
+# Note: that you will probably end in a detached head state after this.
+
+set -euo pipefail
+ 
+repo_dir="$(dirname "$(dirname "$0")")"
+latest="$(git -C "$repo_dir" ls-remote 2>/dev/null | \
+  grep HEAD | cut -f 1 || true)"
+printf "\nUpdating tools in '$repo_dir' to '${latest:0:8}...'\n\n"
+
+git -C "$repo_dir" stash
+git -C "$repo_dir" checkout "$latest"
+git -C "$repo_dir" stash pop || true
+
+printf "\nDone.\n"

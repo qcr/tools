@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Tools for making QR tags to stick on robots. Usage is:
-#   robot_tag \
+#   qcr ceate_tag \
 #     <title to put on pdf> \
 #     <contact email to put on pdf> \
 #     <url for the QR tag to point to>
