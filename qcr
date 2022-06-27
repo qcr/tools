@@ -65,8 +65,8 @@ if [ -z "$latest" ]; then
   printf "${WARN}%s${NC}\n" \
     "Check for latest tools failed; using cached version in '$_this_dir'."
 elif [ "$latest" != "$installed" ]; then
-  printf "${WARN}%s%s\n\t%s${NC}\n\n" \
-    "Old version (${installed:0:8}) found in '$_this_dir'. " \
+  printf "${WARN}%s\n%s\n\t%s${NC}\n\n" \
+    "Old version (${installed:0:8}) found in '$_this_dir'." \
     "Update to latest (${latest:0:8}) using:" \
     "qcr update"
 fi
