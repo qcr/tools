@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+#
+# Installs all system configuration files for a given hostname
+# 
+# To install all saved system configuration files:
+#     qcr system_configs install [hostname]
+#
+# Note: the machine's hostname, as determined by the `hostname` command, will
+# be used if called with no arguments
+# 
+# TODO: needs to be updated to use robot-specific configuration repositories
+# This will search for all files in a repository called
+# `qcr/<hostname>_system_config, and install them onto the current system using
+# the symbolic link method described above. For example on a system with
+# hostname `guiabot`, all files shown in `qcr/guiabot_system_config` will be
+# linked into the system by doing the following:
+# 
+# 1. Any existing file at the corresponding location will be moved from
+#    `/path/to/file/name` to `/path/to/file/name.bak` 
+# 2. A symbolic link will be inserted at the corresponding location pointing to
+#    the tracked file (i.e. `/path/to/file/name` will now point to
+#    `<guiabot_system_config_repo>/path/to/file/name`)
+set -euo pipefail
+
+printf "%s\n%s\n\t%s\n" \
+  "This script needs work to handle robot-specific repositories post" \
+  "migration. See here for details:" \
+  "https://github.com/qcr/tools/issues/3"
+exit 0
+
+# Use the current hostname if none is provided
+hn="${1:-}"
+if [ -z "$hn" ]; then
+  hn="$(hostname)"
+  printf "\e[33m%s\e[0m\n" \
+    "WARNING: Using current hostname '$hn' as none was provided."
+fi
+root="$(realpath $(dirname $0))/$hn"
+
+# Only proceed if there are configs available for this hostname
+if [ ! -d "$root" ]; then
+  printf "\n\e[31m%s\n\t%s\e[0m\n" \
+    "ERROR: no configs found for host '$hn' in location:" "$root"
+  exit 1
+fi
+
+# Loop through all found configs, adding them iteratively
+for c in $(find "$root" -type f); do
+  target="/$(realpath --relative-to="$root" "$c")"
+  echo "Installing $c to $target..."
+  if [ -f "$target" ]; then
+    sudo rsync -a "$target" "$target.bak"
+    sudo rm "$target"
+    echo -e "\tMoved $target to $target.bak"
+  fi
+  sudo ln -s "$c" "$target"
+  echo -e "\tSymlinked $target to $c"
+done
+echo "Finished installing all configs."

@@ -10,8 +10,9 @@ This repository contains the `qcr` script, which allows simple direct access to 
 
 A list of the tools available can be found by simply running the `qcr` script. Some of the featured tools include:
 
-- **code_template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (creator [btalb](https://github.com/btalb))
-- **create_tag** - allows the generation of a QR-QCR tag linked to a URL (creator [btalb](https://github.com/btalb))
+- **code_template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (author [btalb](https://github.com/btalb))
+- **create_tag** - allows the generation of a QR-QCR tag linked to a URL (author [btalb](https://github.com/btalb))
+- **system_configs** - a series of scripts for managing and tracking system configuration settings on shared systems (author [btalb](https://github.com/btalb))
 
 ## Installing the tools
 

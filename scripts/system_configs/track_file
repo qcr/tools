@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+#
+# Allows tracking a new system configuration file
+#
+# To start tracking a new system file:
+#     qcr system_configs track_file <full_path_to_config> [hostname]
+#
+# Note: the machine's hostname, as determined by the `hostname` command, will
+# be used if called with only 1 argument
+# 
+# TODO: needs to be updated to use robot-specific configuration repositories
+# The file is added to a repository, in a repository called
+# `qcr/<hostname>_system_config`, and then symbolically linked back into the
+# current system. For example, `qcr system_configs track_file /etc/fstab` on a
+# machine with hostname `guiabot` will do the following:
+# 
+# 1. Make a backup of `/etc/fstab` at `/etc/fstab.bak`
+# 2. Move `/etc/fstab` to `<guiabot_system_config_repo>/etc/fstab`
+# 3. Place a symbolic link at `/etc/fstab` pointing to
+#    `<guiabot_system_config_repo>/etc/fstab`
+# 
+# The `/etc/fstab` file can now be edited as normal, with the added benefit
+# that any customisations you do will be automatically tracked by the
+# guiabot_system_config repository. These changes can then be committed there.
+set -euo pipefail
+
+printf "%s\n%s\n\t%s\n" \
+  "This script needs work to handle robot-specific repositories post" \
+  "migration. See here for details:" \
+  "https://github.com/qcr/tools/issues/3"
+exit 0
+
+# Use the current hostname if none is provided
+hn="${2:-}"
+if [ -z "$hn" ]; then
+  hn="$(hostname)"
+  printf "\e[33m%s\e[0m\n" \
+    "WARNING: Using current hostname '$hn' as none was provided."
+fi
+root="$(realpath $(dirname $0))/$hn"
+
+# Validate selected config file
+if [ -z "$1" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: please provide path to a config file as argument."
+  exit 1;
+elif [ -d "$1" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: this script doesn't support directories at this stage."
+  exit 2;
+elif [ -L "$1" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: config file already appears to be a symlink. Not using."
+  exit 3;
+fi
+p="$(realpath "$1")"
+
+# Add requested config
+mkdir -p "$(dirname "$root$p")"
+if [ -f "$p" ]; then
+  sudo rsync -a "$p" "$root$p"
+  sudo rsync -a "$p" "$p.bak"
+  sudo rm "$p"
+else
+  sudo touch "$root$p"
+fi
+sudo ln -s "$root$p" "$p"
+sudo chown -h --reference "$root$p" "$p"
