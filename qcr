@@ -108,8 +108,8 @@ if [ -z "$cmd" ]; then
     printf "\n${ERROR}No command matched '%s'.${NC}\n\n" "$(echo "${sub[@]}")"
   fi
   printf '%s\n' \
-    'Please make a call that matches one of the following available commands'
-  printf '%s\n' "${cmds[@]}" | sed 's/^/\t/'
+    'Please make a call that matches one of the following available commands:'
+  printf '%s\n' "${cmds[@]}" | sed 's/^/\t/' | sort
   exit 1
 fi
 
