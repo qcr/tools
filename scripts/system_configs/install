@@ -22,6 +22,12 @@
 #    `<guiabot_system_config_repo>/path/to/file/name`)
 set -euo pipefail
 
+printf "%s\n%s\n\t%s\n" \
+  "This script needs work to handle robot-specific repositories post" \
+  "migration. See here for details:" \
+  "https://github.com/qcr/tools/issues/3"
+exit 0
+
 # Use the current hostname if none is provided
 hn="${1:-}"
 if [ -z "$hn" ]; then
