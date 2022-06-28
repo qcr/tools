@@ -105,7 +105,7 @@ cmd="$(echo "$cmds" | while read c; do \
 
 if [ -z "$cmd" ]; then
   if [ ${#sub[@]} -gt 0 ]; then
-    printf "\n${ERROR}No command matched '${sub[@]}'.${NC}\n\n"
+    printf "\n${ERROR}No command matched '%s'.${NC}\n\n" "$(echo "${sub[@]}")"
   fi
   printf '%s\n' \
     'Please make a call that matches one of the following available commands'
