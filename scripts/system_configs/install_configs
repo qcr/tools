@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Use the current hostname if none is provided
+hn="${1:-}"
+if [ -z "$hn" ]; then
+  hn="$(hostname)"
+  printf "\e[33m%s\e[0m\n" \
+    "WARNING: Using current hostname '$hn' as none was provided."
+fi
+root="$(realpath $(dirname $0))/$hn"
+
+# Only proceed if there are configs available for this hostname
+if [ ! -d "$root" ]; then
+  printf "\n\e[31m%s\n\t%s\e[0m\n" \
+    "ERROR: no configs found for host '$hn' in location:" "$root"
+  exit 1
+fi
+
+# Loop through all found configs, adding them iteratively
+for c in $(find "$root" -type f); do
+  target="/$(realpath --relative-to="$root" "$c")"
+  echo "Installing $c to $target..."
+  if [ -f "$target" ]; then
+    sudo rsync -a "$target" "$target.bak"
+    sudo rm "$target"
+    echo -e "\tMoved $target to $target.bak"
+  fi
+  sudo ln -s "$c" "$target"
+  echo -e "\tSymlinked $target to $c"
+done
+echo "Finished installing all configs."

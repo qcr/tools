@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Use the current hostname if none is provided
+hn="${2:-}"
+if [ -z "$hn" ]; then
+  hn="$(hostname)"
+  printf "\e[33m%s\e[0m\n" \
+    "WARNING: Using current hostname '$hn' as none was provided."
+fi
+root="$(realpath $(dirname $0))/$hn"
+
+# Validate selected config file
+if [ -z "$1" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: please provide path to a config file as argument."
+  exit 1;
+elif [ -d "$1" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: this script doesn't support directories at this stage."
+  exit 2;
+elif [ -L "$1" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: config file already appears to be a symlink. Not using."
+  exit 3;
+fi
+p="$(realpath "$1")"
+
+# Add requested config
+mkdir -p "$(dirname "$root$p")"
+if [ -f "$p" ]; then
+  sudo rsync -a "$p" "$root$p"
+  sudo rsync -a "$p" "$p.bak"
+  sudo rm "$p"
+else
+  sudo touch "$root$p"
+fi
+sudo ln -s "$root$p" "$p"
+sudo chown -h --reference "$root$p" "$p"
