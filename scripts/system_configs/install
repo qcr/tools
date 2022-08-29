@@ -28,6 +28,107 @@ printf "%s\n%s\n\t%s\n" \
   "https://github.com/qcr/tools/issues/3"
 exit 0
 
+###########OVERVIEW OF CONFIG DATA ACCESS#######################
+#
+#                                                                                                                                                                            
+#                      +-------------------+                                                                                                                                 
+#                      |    QCR TOOLS      |                                                                                                                                 
+#                      +---------|---------+                                                                                                                                 
+#                                |                                                                                                                                           
+#                                |                                                                                                                                           
+#                                |                                                                                                                                           
+#+------------+        +------------------+       +------------------------------+                                                                                           
+#| <HOSTNAME> ---------- install_configs  |-------| <HOSTNAME>_system_config repo---------------------+ Git repo internal folder structure                                   
+#+------------+        +------------------+       +------------------------------+                    | <hostname>-<hwVariant>-<default*>                                    
+#  (Including                                      eg https://github.com/qcr/robot_system_configs     | *single instance of deafult                                          
+#  Robot Number)                                   qcr = default "gitOrg"                             |eg:                                                                   
+#  eg husky-1                                                                                         |husky-1-x86-default
+#  eg husky-1                                                                                         | - install_script (not linked into filesystem)                                                   
+#                                                                                                     | - home                                                               
+#                                                                                                     |  - ...etc                                                            
+#                                                                                                     | - opt                                                                
+#                                                                                                     |  - ...etc                                                            
+#                                                                                                     | husky-1-tx2                                                          
+#                                                                                                     |  ...etc                                                              
+#                                                                                                     | husky-1-pi4                                                          
+#                                                                                                     |  ...etc                                                              
+#                                                                                                     | husky-1-x86-rtos                                                     
+#                                                                                                     |  ...etc                                                              
+#                                                                                                                            
+#
+
+
+#####TODO#####
+# - Add mechanism for the behaviours outlined below in "default parameters"
+# - Add config mechanism for removing factory default files ( also add track_and_remove_file script to aid this process)
+# - Migrate data from https://github.com/qcr/robot_system_configs to individual repos per robot
+# - Check if .bak file already exists and avoid overwritting legitimate backups with worthless backups of link files when 
+#   running the install script n>1 times.
+
+
+# Default Parameters
+nProm = 0            #Flag for No user prompt mode, useful for intergating in automations
+cuEng = 0            #Flag to Create Eng user
+installIA = 0        #Flag to install IA Client from QCR Repo
+hwVar = "Default"    #Hardware Variant to be used
+hn = "$(hostname)"   #system Hostname
+gitOrg = "qcr"       #Default git organisation for system config file host, useful for industry/sensitive projects
+gitBranch = "master" #Default Branch to use 
+localPath = ""       #Alternative <Hostname>_system_configs file location if repo not accessible
+installScript = 0    #Flag to run default install script from configs
+.bash
+
+
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -np|--no_prompt|--silent)
+      nProm=1
+      shift
+      ;;
+    -ia|--install_IA)
+      installIA=1
+      shift
+      ;;
+    -ce|--create_eng)
+      cuEng=1
+      shift
+      ;;
+    -hw|--hadware_variant)
+      hwVar="$2"
+      shift
+      shift
+      ;;
+    -h|--host|--hostname)
+      hn="$2"
+      shift
+      shift
+      ;;
+    -go|--git_org|--git_organisation)
+      gitOrg="$2"
+      shift
+      shift
+      ;;
+    -gb|--git_branch)
+      gitBranch="$2"
+      shift
+      shift
+      ;;
+    -lp|-p|--local_path)
+      localPath="$2"
+      shift
+      shift
+      ;;
+    -i|-install_script|-run_install
+      installScript=1
+      shift
+      ;;
+    *)
+      echo "Invalid argument: \"$1\""
+      exit 1
+  esac
+done
+
 # Use the current hostname if none is provided
 hn="${1:-}"
 if [ -z "$hn" ]; then
