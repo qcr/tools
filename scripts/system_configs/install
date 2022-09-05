@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 #
+# @TODO DELETE STUFF
+# @TODO SYMLINKS
+# @TODO NO RECURSIVE TRACKING
+#
 # Installs all system configuration files for a given hostname
 # 
 # To install all saved system configuration files:
@@ -10,23 +14,17 @@
 # 
 # TODO: needs to be updated to use robot-specific configuration repositories
 # This will search for all files in a repository called
-# `qcr/<hostname>_system_config, and install them onto the current system using
+# `qcr/system_configs_<hostname>, and install them onto the current system using
 # the symbolic link method described above. For example on a system with
-# hostname `guiabot`, all files shown in `qcr/guiabot_system_config` will be
+# hostname `guiabot`, all files shown in `qcr/system_configs_guiabot` will be
 # linked into the system by doing the following:
 # 
 # 1. Any existing file at the corresponding location will be moved from
 #    `/path/to/file/name` to `/path/to/file/name.bak` 
 # 2. A symbolic link will be inserted at the corresponding location pointing to
 #    the tracked file (i.e. `/path/to/file/name` will now point to
-#    `<guiabot_system_config_repo>/path/to/file/name`)
-set -euo pipefail
-
-printf "%s\n%s\n\t%s\n" \
-  "This script needs work to handle robot-specific repositories post" \
-  "migration. See here for details:" \
-  "https://github.com/qcr/tools/issues/3"
-exit 0
+#    `<system_configs_guiabot_repo>/path/to/file/name`)
+# set -euo pipefail
 
 ###########OVERVIEW OF CONFIG DATA ACCESS#######################
 #
@@ -66,61 +64,160 @@ exit 0
 #   running the install script n>1 times.
 
 
+function _root_check() {
+  if [ "$EUID" -ne 0 ]; then echo "Please re-run with sudo."; exit 1; fi
+}
+
+function _prompt() {
+  while true; do
+  read -p "$1 (Y/n): " yn
+  case $yn in 
+	[yY]|"" ) echo 1;
+		break;;
+	[nN]|"" ) echo 0;
+        break;;
+	* ) echo invalid response;;
+  esac
+  done
+}
+
+function _check_remote() {
+    STATUS=$(curl -I -s \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer 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" \
+        https://api.github.com/repos/$1 | head -n 1|cut -d$' ' -f2)
+    
+    if [ "$STATUS" == "200" ]; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
+function _check_local() {
+  if [ ! -e "$1" ]; then
+    echo 0
+    return
+  fi
+
+  pushd $1
+  git status 2>&1 /dev/null
+  RESULT=$?
+  popd
+  if [ "$RESULT" == "0" ]; then
+    echo 1
+  else
+    echo 0
+  fi
+}
+
+function _create_remote() {
+    curl -s -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer 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" \
+        -d "{\"name\":\"$2\",\"description\":\"System configuration files for $2\", \"private\": true,\"auto_init\": true, \"has_issues\": true,\"has_projects\": true,\"has_wiki\":true}" \
+        "https://api.github.com/orgs/$1/repos"       
+}
+
+function _get_remote() {
+    echo "Cloning https://github.com/$1"
+    git clone https://oauth2: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@github.com/$1 $2
+}
+
+function _get_variant() {
+  IFS='-' read -ra PARTS <<< $1
+  VARIANT=$(IFS=- ; echo "${PARTS[*]:1}")
+  if [ "$VARIANT" != "" ]; then
+    echo $VARIANT
+  else
+    echo "default"
+  fi 
+}
+
+function _get_base_name() {
+  IFS='-' read -ra PARTS <<< $1
+  echo ${PARTS[0]}
+}
+
+function _get_remote_org() {
+  IFS='/' read -ra PARTS <<< $1
+  echo ${PARTS[0]}
+}
+
+function _get_repo_name() {
+  IFS='/' read -ra PARTS <<< $1
+  echo ${PARTS[1]}
+}
+
 # Default Parameters
-nProm = 0            #Flag for No user prompt mode, useful for intergating in automations
-cuEng = 0            #Flag to Create Eng user
-installIA = 0        #Flag to install IA Client from QCR Repo
-hwVar = "Default"    #Hardware Variant to be used
-hn = "$(hostname)"   #system Hostname
-gitOrg = "qcr"       #Default git organisation for system config file host, useful for industry/sensitive projects
-gitBranch = "master" #Default Branch to use 
-localPath = ""       #Alternative <Hostname>_system_configs file location if repo not accessible
-installScript = 0    #Flag to run default install script from configs
-.bash
+INTERACTIVE=1            #Flag for No user prompt mode, useful for intergating in automations
+HOSTNAME="$(hostname)"   #system Hostname
+VARIANT=""    #Hardware Variant to be used
+GH_ORG="qcr"
+GH_REPO=""
+GH_BRANCH="" #Default Branch to use 
+GH_PATH=""
+GH_TEMPLATE_PATH=""
+GH_TEMPLATE_VARIANT="default"
+LOCAL_PATH="/opt/qcr"       #Alternative <Hostname>_system_configs file location if repo not accessible
+CREATE_REMOTE=0
 
+_DIFFERENT_REMOTE=0
 
+RUN_INSTALL=1    #Flag to run default install script from configs
+INSTALL_IA=0
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     -np|--no_prompt|--silent)
-      nProm=1
+      INTERACTIVE=1
       shift
       ;;
     -ia|--install_IA)
-      installIA=1
-      shift
-      ;;
-    -ce|--create_eng)
-      cuEng=1
-      shift
-      ;;
-    -hw|--hadware_variant)
-      hwVar="$2"
-      shift
+      INSTALL_IA=1
       shift
       ;;
     -h|--host|--hostname)
-      hn="$2"
+      VARIANT="$2"
       shift
       shift
       ;;
-    -go|--git_org|--git_organisation)
-      gitOrg="$2"
+    -hw|--hadware_variant)
+      VARIANT="$2"
       shift
       shift
       ;;
-    -gb|--git_branch)
-      gitBranch="$2"
+    -t|--template)
+      GH_TEMPLATE_PATH="$2"
       shift
       shift
       ;;
-    -lp|-p|--local_path)
-      localPath="$2"
+    -thw|--template_variant)
+      GH_TEMPLATE_VARIANT="$2"
       shift
       shift
       ;;
-    -i|-install_script|-run_install
-      installScript=1
+    -gb|-b|--git_branch)
+      GH_BRANCH="$2"
+      shift
+      shift
+      ;;
+    -lp|-l|--local_path)
+      LOCAL_PATH="$2"
+      shift
+      shift
+      ;;
+    -x|-ni|-no_install)
+       RUN_INSTALL=0
+       shift
+       ;;
+    -c|--create_remote)
+      CREATE_REMOTE=1
+      shift
+      ;;
+    -o|--owner)
+      GH_ORG="$2"
+      shift
       shift
       ;;
     *)
@@ -129,32 +226,104 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Use the current hostname if none is provided
-hn="${1:-}"
-if [ -z "$hn" ]; then
-  hn="$(hostname)"
-  printf "\e[33m%s\e[0m\n" \
-    "WARNING: Using current hostname '$hn' as none was provided."
-fi
-root="$(realpath $(dirname $0))/$hn"
 
-# Only proceed if there are configs available for this hostname
-if [ ! -d "$root" ]; then
-  printf "\n\e[31m%s\n\t%s\e[0m\n" \
-    "ERROR: no configs found for host '$hn' in location:" "$root"
-  exit 1
+_root_check
+
+if [ "$VARIANT" == "" ]; then
+  VARIANT=$(_get_variant $HOSTNAME)
 fi
+
+HOSTNAME=$(_get_base_name $HOSTNAME)
+GH_REPO="system-configs-$HOSTNAME"
+
+# if [ "$GH_PATH" == "" ]; then
+#   _GH_PATH="$GH_ORG/$GH_REPO"
+# fi
+
+GH_PATH="$GH_ORG/$GH_REPO"
+_USE_TEMPLATE=0
+
+if [ "$GH_TEMPLATE_PATH" != "" ] && [ "$GH_TEMPLATE_PATH" != "$_GH_PATH" ]; then
+  _GH_TEMPLATE_ORG=$(_get_remote_org $GH_TEMPLATE_PATH)
+  _GH_TEMPLATE_REPO=$(_get_repo_name $GH_TEMPLATE_PATH)
+  _USE_TEMPLATE=1
+fi
+
+echo "Hostname: $(hostname)"
+echo "Local Machine Base": $HOSTNAME
+echo "Machine Variant: $VARIANT"
+
+echo "Machine Repository: https://github.com/$GH_PATH"
+
+if [ "$_USE_TEMPLATE" == "1" ]; then
+  echo "Template Repository: https://github.com/$GH_TEMPLATE_PATH"
+fi
+
+echo -n "Branch: "
+if [ "$GH_BRANCH" != "" ]; then
+  echo $GH_BRANCH
+else
+  echo "default"
+fi
+
+echo -n "Installing: "
+if [ "$RUN_INSTALL" == "1" ]; then
+  echo "yes"
+else
+  echo "no"
+fi
+
+echo "-------------------------------------------"
+
+if [ "$(_check_remote $GH_PATH)" == "0" ]; then
+  if [ "$CREATE_REMOTE" == "1" ] || [ "$(_prompt 'Remote does not exist. Create it?')" == "1" ]; then
+    echo 'Creating remote...'
+    _create_remote $GH_ORG $GH_REPO
+  else
+    echo 'Unable to continue, nothing to do...'
+    exit 0
+  fi
+fi
+
+if [ "$(_check_local $LOCAL_PATH/$GH_REPO)" == "0" ]; then
+  _get_remote $GH_PATH $LOCAL_PATH/$GH_REPO
+  git config --global --add safe.directory $LOCAL_PATH/$GH_REPO
+
+  if [ "$GH_BRANCH" != "" ]; then
+    pushd $LOCAL_PATH/$GH_REPO
+    git checkout $GH_BRANCH
+    popd
+  fi
+fi
+
+mkdir -p $LOCAL_PATH/$GH_REPO/$VARIANT
+
+if [ "$_USE_TEMPLATE" == "1" ]; then
+  echo "Fetching template..."
+  _get_remote $GH_TEMPLATE_PATH /tmp/$_GH_TEMPLATE_REPO
+  rsync -r --progress --exclude '.git' --remove-source-files /tmp/$_GH_TEMPLATE_REPO/$GH_TEMPLATE_VARIANT/* $LOCAL_PATH/$GH_REPO/$VARIANT
+  rm -rf /tmp/$_GH_TEMPLATE_REPO
+fi
+
+echo 'Installing files...'
 
 # Loop through all found configs, adding them iteratively
-for c in $(find "$root" -type f); do
-  target="/$(realpath --relative-to="$root" "$c")"
+pushd $ROOT >/dev/null
+for c in $(find . -type f); do
+  target="/$(realpath --relative-to="$LOCAL_PATH/$GH_REPO/$VARIANT/" "$c")"
+
+  if [[ -L "$target" ]]; then
+    echo "Skipping $c"
+    continue
+  fi
   echo "Installing $c to $target..."
   if [ -f "$target" ]; then
-    sudo rsync -a "$target" "$target.bak"
-    sudo rm "$target"
+    rsync -a "$target" "$target.bak"
+    rm "$target"
     echo -e "\tMoved $target to $target.bak"
   fi
-  sudo ln -s "$c" "$target"
+  ln -s "$(realpath $c)" "$target"
   echo -e "\tSymlinked $target to $c"
 done
+popd
 echo "Finished installing all configs."
