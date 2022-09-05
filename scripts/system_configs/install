@@ -307,15 +307,32 @@ fi
 
 echo 'Installing files...'
 
+ROOT=$LOCAL_PATH/$GH_REPO/$VARIANT/
+TRASH=/var/qcr/removed
+
 # Loop through all found configs, adding them iteratively
 pushd $ROOT >/dev/null
 for c in $(find . -type f); do
-  target="/$(realpath --relative-to="$LOCAL_PATH/$GH_REPO/$VARIANT/" "$c")"
+  target="/$(realpath --relative-to="$ROOT" "$c")"
 
-  if [[ -L "$target" ]]; then
-    echo "Skipping $c"
+  if [[ -L "$target" ]] && [ "$(readlink -f $target)" == "$(realpath $c)" ]; then
+    echo "Skipping $(realpath $c)"
     continue
   fi
+  
+  if [[ $c == *.delete ]]; then
+    target="${target:0:-7}"
+    if [ -f "$target" ]; then
+      echo "Removing $target..."
+      mkdir -p "$TRASH/$(dirname $target)"
+      rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
+      echo -e "\tMoved $target to $TRASH$target"
+    else
+      echo "Skipping $(realpath $c)"
+    fi
+    continue
+  fi
+
   echo "Installing $c to $target..."
   if [ -f "$target" ]; then
     rsync -a "$target" "$target.bak"
@@ -325,5 +342,5 @@ for c in $(find . -type f); do
   ln -s "$(realpath $c)" "$target"
   echo -e "\tSymlinked $target to $c"
 done
-popd
+popd >/dev/null
 echo "Finished installing all configs."
