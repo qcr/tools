@@ -330,7 +330,7 @@ TRASH=/var/qcr/removed
 
 # Loop through all found configs, adding them iteratively
 pushd $ROOT >/dev/null
-for c in $(find . -type f); do
+for c in $(find . -not -path "./install/*" -type f); do
   target="/$(realpath --relative-to="$ROOT" "$c")"
 
   if [[ -L "$target" ]] && [ "$(readlink -f $target)" == "$(realpath $c)" ]; then
@@ -353,8 +353,8 @@ for c in $(find . -type f); do
 
   echo "Installing $c to $target..."
   if [ -f "$target" ]; then
-    rsync -a "$target" "$target.bak"
-    rm "$target"
+    mkdir -p "$TRASH/$(dirname $target)"
+    rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
     echo -e "\tMoved $target to $target.bak"
   fi
   ln -s "$(realpath $c)" "$target"
@@ -365,10 +365,17 @@ echo "Finished installing all configs."
 
 echo "-------------------------------------------"
 
+
+
 if [ "$RUN_INSTALL" == "1" ]; then
-  if [ -e "$ROOT/install" ]; then
-    echo 'Running Installation Script...'
-    $ROOT/install
+  if [ "$(ls -A ${ROOT}install)" ]; then
+    echo 'Running Installation Scripts...'
+    SCRIPTS=$(find "${ROOT}install" -type f)
+    for SCRIPT in $SCRIPTS; do
+        if [ -x $SCRIPT ]; then
+            bash $SCRIPT
+        fi
+    done
   else
     echo "No install script found at path: $ROOT/install"
   fi
