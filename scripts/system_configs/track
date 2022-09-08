@@ -54,6 +54,7 @@ LOCAL_PATH="/opt/qcr"       #Alternative <Hostname>_system_configs file location
 TARGET_FILE=""
 RESTORE=0
 DELETE=0
+UNLINK=0
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -78,6 +79,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     -r|--restore)
       RESTORE=1
+      shift
+      ;;
+    -u|--unlink)
+      UNLINK=1
       shift
       ;;
     *)
@@ -109,7 +114,7 @@ elif [ -d "$TARGET_FILE" ]; then
   printf "\e[31m%s\e[0m\n" \
     "ERROR: this script doesn't support directories at this stage."
   exit 2;
-elif [ -L "$TARGET_FILE" ] && [ "$RESTORE" == "0" ]; then
+elif [ -L "$TARGET_FILE" ] && [ "$RESTORE" == "0" ] && [ "$UNLINK" == "0" ]; then
   printf "\e[31m%s\e[0m\n" \
     "ERROR: config file already appears to be a symlink. Not using."
   exit 3;
@@ -128,6 +133,10 @@ echo "-------------------------------------------"
 postfix=""
 if [ "$DELETE" == "1" ]; then
     postfix=".delete"
+fi
+
+if [ "$UNLINK" == "1" ]; then
+    RESTORE=1
 fi
 
 # Add requested config
@@ -161,6 +170,11 @@ else
         rm $ROOT$target
         echo -e "\tMoved $ROOT$target to $target"
     fi
+fi
+
+if [ "$UNLINK" == "1" ]; then
+    rm -f "$ROOT$target.delete"
+    rm -f "$ROOT$target"
 fi
 
 
