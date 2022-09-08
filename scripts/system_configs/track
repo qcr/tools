@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+#
+# Allows tracking a new system configuration file
+#
+# To start tracking a new system file:
+#     qcr system_configs track_file <full_path_to_config> [hostname]
+#
+# Note: the machine's hostname, as determined by the `hostname` command, will
+# be used if called with only 1 argument
+# 
+# TODO: needs to be updated to use robot-specific configuration repositories
+# The file is added to a repository, in a repository called
+# `qcr/<hostname>_system_config`, and then symbolically linked back into the
+# current system. For example, `qcr system_configs track_file /etc/fstab` on a
+# machine with hostname `guiabot` will do the following:
+# 
+# 1. Make a backup of `/etc/fstab` at `/etc/fstab.bak`
+# 2. Move `/etc/fstab` to `<guiabot_system_config_repo>/etc/fstab`
+# 3. Place a symbolic link at `/etc/fstab` pointing to
+#    `<guiabot_system_config_repo>/etc/fstab`
+# 
+# The `/etc/fstab` file can now be edited as normal, with the added benefit
+# that any customisations you do will be automatically tracked by the
+# guiabot_system_config repository. These changes can then be committed there.
+set -euo pipefail
+
+function _root_check() {
+  if [ "$EUID" -ne 0 ]; then echo "Please re-run with sudo."; exit 1; fi
+}
+
+function _get_base_name() {
+  IFS='-' read -ra PARTS <<< $1
+  echo ${PARTS[0]}
+}
+
+function _get_variant() {
+  IFS='-' read -ra PARTS <<< $1
+  VARIANT=$(IFS=- ; echo "${PARTS[*]:1}")
+  if [ "$VARIANT" != "" ]; then
+    echo $VARIANT
+  else
+    echo "default"
+  fi 
+}
+
+# Default Parameters
+HOSTNAME="$(hostname)"   #system Hostname
+VARIANT=""    #Hardware Variant to be used
+GH_BRANCH="" #Default Branch to use 
+GH_PATH=""
+GH_TEMPLATE_PATH=""
+GH_TEMPLATE_VARIANT="default"
+LOCAL_PATH="/opt/qcr"       #Alternative <Hostname>_system_configs file location if repo not accessible
+TARGET_FILE=""
+RESTORE=0
+DELETE=0
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--host|--hostname)
+      HOSTNAME="$2"
+      shift
+      shift
+      ;;
+    -hw|--hadware-variant)
+      VARIANT="$2"
+      shift
+      shift
+      ;;
+    -lp|-l|--local-path)
+      LOCAL_PATH="$2"
+      shift
+      shift
+      ;;
+    -d|--delete)
+      DELETE=1
+      shift
+      ;;
+    -r|--restore)
+      RESTORE=1
+      shift
+      ;;
+    *)
+      TARGET_FILE="$1"
+      shift
+      ;;
+  esac
+done
+
+_root_check
+
+if [ "$VARIANT" == "" ]; then
+  VARIANT=$(_get_variant $HOSTNAME)
+fi
+
+HOSTNAME=$(_get_base_name $HOSTNAME)
+GH_REPO="system-configs-$HOSTNAME"
+
+ROOT=$LOCAL_PATH/$GH_REPO/$VARIANT/
+
+mkdir -p $ROOT
+
+# Validate selected config file
+if [ -z "$TARGET_FILE" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: please provide path to a config file as argument."
+  exit 1;
+elif [ -d "$TARGET_FILE" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: this script doesn't support directories at this stage."
+  exit 2;
+elif [ -L "$TARGET_FILE" ] && [ "$RESTORE" == "0" ]; then
+  printf "\e[31m%s\e[0m\n" \
+    "ERROR: config file already appears to be a symlink. Not using."
+  exit 3;
+fi
+
+target="$(realpath -s "$TARGET_FILE")"
+TRASH=/var/qcr/removed
+
+echo "Hostname: $(hostname)"
+echo "Local Machine Base": $HOSTNAME
+echo "Machine Variant: $VARIANT"
+echo "Configuration Path: $ROOT"
+
+echo "-------------------------------------------"
+
+postfix=""
+if [ "$DELETE" == "1" ]; then
+    postfix=".delete"
+fi
+
+# Add requested config
+if [ "$RESTORE" == "0" ]; then
+    mkdir -p "$(dirname "$ROOT$target")"
+    if [ -f "$target" ]; then
+        mkdir -p "$TRASH/$(dirname $target)"
+        sudo rsync -a "$target" "$ROOT$target$postfix"
+        rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
+        
+        if [ "$DELETE" == "0" ]; then
+            rm -f "$ROOT$target.delete"
+        else
+            rm -f $ROOT$target
+        fi
+
+        echo -e "\tMoved $target to $ROOT$target$postfix"
+    else
+        sudo touch "$ROOT$target"
+    fi
+
+    if [ "$DELETE" == "0" ]; then
+        sudo ln -s "$ROOT$target" "$target"
+        sudo chown -h --reference "$ROOT$target" "$target"
+        echo -e "\tSymlinked $ROOT$target to $target"
+    fi
+else
+    echo "$TRASH$target"
+    if [ -f "$TRASH$target" ]; then
+        rsync --remove-source-files "$TRASH$target" "$target"
+        rm $ROOT$target
+        echo -e "\tMoved $ROOT$target to $target"
+    fi
+fi
+
+

@@ -52,14 +52,6 @@
 #                                                                                                                            
 #
 
-
-#####TODO#####
-# - Add mechanism for the behaviours outlined below in "default parameters"
-# - Add config mechanism for removing factory default files ( also add track_and_remove_file script to aid this process)
-# - Migrate data from https://github.com/qcr/robot_system_configs to individual repos per robot
-# - Check if .bak file already exists and avoid overwritting legitimate backups with worthless backups of link files when 
-#   running the install script n>1 times.
-
 TOKEN=$(cat <<EOF
 -----BEGIN PGP MESSAGE-----
 
@@ -89,20 +81,11 @@ function _prompt() {
 }
 
 function _check_local() {
-  if [ ! -e "$1" ]; then
-    echo 0
+  if [ ! -e "$1/.git" ]; then
+    echo 1
     return
   fi
-
-  pushd $1
-  git status 2>&1 /dev/null
-  RESULT=$?
-  popd
-  if [ "$RESULT" == "0" ]; then
-    echo 1
-  else
-    echo 0
-  fi
+  echo 0
 }
 
 function _get_oauth_token() {
@@ -110,7 +93,13 @@ function _get_oauth_token() {
   if [ "$pass" == "" ]; then
     read -s -p "GitHub Token Password: " pass
   fi
+  
   echo "$TOKEN" | gpg --batch --yes --armor --decrypt --passphrase $pass 2>/dev/null
+  RESULT=$?
+  
+  if [ "$RESULT" != "0" ]; then
+    return 1
+  fi
 }
 
 function _check_remote() {
@@ -201,7 +190,7 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    -gb|-b|--git-branch)
+    -b|--branch)
       GH_BRANCH="$2"
       shift
       shift
@@ -243,6 +232,11 @@ _root_check
 
 if [ "$NO_REMOTE" == "0" ]; then
   GH_TOKEN=$(_get_oauth_token $TOKEN_PASS)
+
+  if [ "$?" == "1" ]; then
+    echo 'Invalid token password';
+    exit 1
+  fi
 fi
 
 if [ "$VARIANT" == "" ]; then
@@ -266,6 +260,7 @@ ROOT=$LOCAL_PATH/$GH_REPO/$VARIANT/
 echo "Hostname: $(hostname)"
 echo "Local Machine Base": $HOSTNAME
 echo "Machine Variant: $VARIANT"
+echo "Configuration Path: $ROOT"
 
 if [ "$NO_REMOTE" == "0" ]; then
   echo "Machine Repository: https://github.com/$GH_PATH"
@@ -301,9 +296,9 @@ if [ "$NO_REMOTE" == "0" ]; then
     fi
   fi
 
-  if [ "$(_check_local $LOCAL_PATH/$GH_REPO)" == "0" ]; then
+  if [ "$(_check_local $LOCAL_PATH/$GH_REPO)" == "1" ]; then
     _get_remote $GH_PATH $LOCAL_PATH/$GH_REPO
-    git config --global --add safe.directory $LOCAL_PATH/$GH_REPO
+    git config --system --add safe.directory $LOCAL_PATH/$GH_REPO
 
     if [ "$GH_BRANCH" != "" ]; then
       pushd $LOCAL_PATH/$GH_REPO
@@ -323,52 +318,52 @@ if [ "$_USE_TEMPLATE" == "1" ]; then
   rm -rf /tmp/$_GH_TEMPLATE_REPO
 fi
 
-echo 'Installing files...'
-
-
-TRASH=/var/qcr/removed
-
-# Loop through all found configs, adding them iteratively
-pushd $ROOT >/dev/null
-for c in $(find . -not -path "./install/*" -type f); do
-  target="/$(realpath --relative-to="$ROOT" "$c")"
-
-  if [[ -L "$target" ]] && [ "$(readlink -f $target)" == "$(realpath $c)" ]; then
-    echo "Skipping $(realpath $c)"
-    continue
-  fi
-  
-  if [[ $c == *.delete ]]; then
-    target="${target:0:-7}"
-    if [ -f "$target" ]; then
-      echo "Removing $target..."
-      mkdir -p "$TRASH/$(dirname $target)"
-      rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
-      echo -e "\tMoved $target to $TRASH$target"
-    else
-      echo "Skipping $(realpath $c)"
-    fi
-    continue
-  fi
-
-  echo "Installing $c to $target..."
-  if [ -f "$target" ]; then
-    mkdir -p "$TRASH/$(dirname $target)"
-    rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
-    echo -e "\tMoved $target to $target.bak"
-  fi
-  ln -s "$(realpath $c)" "$target"
-  echo -e "\tSymlinked $target to $c"
-done
-popd >/dev/null
-echo "Finished installing all configs."
-
-echo "-------------------------------------------"
-
-
-
 if [ "$RUN_INSTALL" == "1" ]; then
-  if [ "$(ls -A ${ROOT}install)" ]; then
+    echo 'Installing files...'
+
+
+    TRASH=/var/qcr/removed
+
+    # Loop through all found configs, adding them iteratively
+    pushd $ROOT >/dev/null
+    for c in $(find . -not -path "./install/*" -type f); do
+    target="/$(realpath --relative-to="$ROOT" "$c")"
+
+    if [[ -L "$target" ]] && [ "$(readlink -f $target)" == "$(realpath $c)" ]; then
+        echo "Skipping $(realpath $c)"
+        continue
+    fi
+    
+    if [[ $c == *.delete ]]; then
+        target="${target:0:-7}"
+        if [ -f "$target" ]; then
+        echo "Removing $target..."
+        mkdir -p "$TRASH/$(dirname $target)"
+        rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
+        echo -e "\tMoved $target to $TRASH$target"
+        else
+        echo "Skipping $(realpath $c)"
+        fi
+        continue
+    fi
+
+    echo "Installing $c to $target..."
+    if [ -f "$target" ]; then
+        mkdir -p "$TRASH/$(dirname $target)"
+        rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
+        echo -e "\tMoved $target to $target.bak"
+    fi
+    ln -s "$(realpath $c)" "$target"
+    echo -e "\tSymlinked $target to $c"
+    done
+    popd >/dev/null
+    echo "Finished installing all configs."
+
+    echo "-------------------------------------------"
+
+
+
+  if [ -d "${ROOT}install" ] && [ "$(ls -A ${ROOT}install)" ]; then
     echo 'Running Installation Scripts...'
     SCRIPTS=$(find "${ROOT}install" -type f)
     for SCRIPT in $SCRIPTS; do
@@ -377,6 +372,6 @@ if [ "$RUN_INSTALL" == "1" ]; then
         fi
     done
   else
-    echo "No install script found at path: $ROOT/install"
+    echo "No install script found at path: $ROOTinstall"
   fi
 fi
