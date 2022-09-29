@@ -133,7 +133,7 @@ HOSTNAME="$(hostname)"   #system Hostname
 VARIANT=""    #Hardware Variant to be used
 GH_ORG="qcr"
 GH_REPO=""
-GH_BRANCH="main" #Default Branch to use 
+GH_BRANCH="master" #Default Branch to use 
 GH_PATH=""
 LOCAL_PATH="/opt/qcr"       #Alternative <Hostname>_system_configs file location if repo not accessible
 TOKEN_PASS=""
@@ -238,7 +238,7 @@ if [ "$GH_BRANCH" != "" ]; then
 fi
 
 _set_git_config $ROOT
-git commit -m 'Automated commit made by QCR sync tools' 2> /dev/null
+git commit -m 'Automated commit made by QCR sync tools'
 _unset_git_config $ROOT
 
 EXISTS=$(git branch -l -a | grep "remotes/origin/$GH_BRANCH")
