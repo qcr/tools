@@ -156,7 +156,7 @@ function _get_repo_name() {
 # Default Parameters
 HOSTNAME="$(hostname)"   #system Hostname
 VARIANT=""    #Hardware Variant to be used
-GH_ORG="qcr"
+GH_ORG="qcr-configs"
 GH_REPO=""
 GH_BRANCH="" #Default Branch to use 
 GH_PATH=""
