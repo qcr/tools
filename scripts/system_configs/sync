@@ -129,10 +129,12 @@ function _unset_git_config() {
 function _get_repo_path() {
   if [[ "$remote_url" == *"git@"* ]]; then
     IFS=':' read -ra PARTS <<< $1
+    echo ${PARTS[-1]}
   else
     IFS='/' read -ra PARTS <<< $1
+    echo ${PARTS[-2]}/${PARTS[-1]}
   fi
-  echo ${PARTS[-1]}
+  
 }
 
 function _update_submodules() {
