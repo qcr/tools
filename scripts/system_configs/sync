@@ -78,8 +78,6 @@ function _create_remote() {
         -H "Authorization: Bearer $GH_TOKEN" \
         -d "{\"name\":\"$2\",\"description\":\"System configuration files for $2\", \"private\": true,\"auto_init\": false, \"has_issues\": true,\"has_projects\": true,\"has_wiki\":true}" \
         "https://api.github.com/orgs/$1/repos"
-
-         
 }
 
 function _init_local() {
@@ -126,6 +124,38 @@ function _unset_git_config() {
     git config --unset user.email
     git config --unset user.name
     popd >/dev/null
+}
+
+function _get_repo_path() {
+  if [[ "$remote_url" == *"git@"* ]]; then
+    IFS=':' read -ra PARTS <<< $1
+  else
+    IFS='/' read -ra PARTS <<< $1
+  fi
+  echo ${PARTS[-1]}
+}
+
+function _update_submodules() {
+  if [ -e ".gitmodules" ]; then
+    sed -i "s/GH_TOKEN/$GH_TOKEN/g" .gitmodules
+  fi
+}
+function _sanitise_submodules() {
+  if [ -e ".gitmodules" ]; then
+    sed -i "s/$GH_TOKEN/GH_TOKEN/g" .gitmodules
+  fi
+}
+
+function _add_submodules() {
+  for f in $(find . -not -path "./.git/HEAD" | grep .git/HEAD); do
+    module_path=$(dirname $(dirname $f))
+    pushd $module_path >/dev/null
+    remote_url=$(git remote get-url origin)
+    popd >/dev/null
+    
+    git submodule add https://oauth2:$GH_TOKEN@github.com/$(_get_repo_path $remote_url) $module_path
+    git submodule absorbgitdirs $module_path
+  done
 }
 
 # Default Parameters
@@ -221,11 +251,17 @@ LOCAL_URL=$(_get_local $ROOT)
 
 _update_local $ROOT $GH_PATH
 
-pushd $ROOT
+pushd $ROOT >/dev/null
+
+_update_submodules
 
 if [ "$PULL" == "1" ]; then
     git pull
 fi
+
+_add_submodules
+
+_sanitise_submodules
 
 git add .
 

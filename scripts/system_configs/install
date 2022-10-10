@@ -126,6 +126,13 @@ function _create_remote() {
 function _get_remote() {
     echo "Cloning https://github.com/$1"
     git clone https://oauth2:$GH_TOKEN@github.com/$1 $2
+
+    pushd $2
+    if [ -e '.gitmodules' ]; then
+      _update_submodules
+      git submodule update --init --recursive
+    fi
+    popd
 }
 
 function _get_variant() {
@@ -151,6 +158,12 @@ function _get_remote_org() {
 function _get_repo_name() {
   IFS='/' read -ra PARTS <<< $1
   echo ${PARTS[1]}
+}
+
+function _update_submodules() {
+  if [ -e ".gitmodules" ]; then
+    sed -i "s/GH_TOKEN/$GH_TOKEN/g" .gitmodules
+  fi
 }
 
 # Default Parameters
@@ -326,35 +339,60 @@ if [ "$RUN_INSTALL" == "1" ]; then
 
     # Loop through all found configs, adding them iteratively
     pushd $ROOT >/dev/null
-    for c in $(find . -not -path "./install/*" -type f); do
-    target="/$(realpath --relative-to="$ROOT" "$c")"
 
-    if [[ -L "$target" ]] && [ "$(readlink -f $target)" == "$(realpath $c)" ]; then
-        echo "Skipping $(realpath $c)"
-        continue
-    fi
-    
-    if [[ $c == *.delete ]]; then
-        target="${target:0:-7}"
-        if [ -f "$target" ]; then
-        echo "Removing $target..."
-        mkdir -p "$TRASH/$(dirname $target)"
-        rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
-        echo -e "\tMoved $target to $TRASH$target"
-        else
-        echo "Skipping $(realpath $c)"
-        fi
-        continue
-    fi
+    CONTENT=()
 
-    echo "Installing $c to $target..."
-    if [ -f "$target" ]; then
-        mkdir -p "$TRASH/$(dirname $target)"
-        rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
-        echo -e "\tMoved $target to $target.bak"
-    fi
-    ln -s "$(realpath $c)" "$target"
-    echo -e "\tSymlinked $target to $c"
+    # files to be installed (excluding files inside git submodules)
+    while IFS=  read -r -d $'\0'; do
+      CONTENT+=("$REPLY")
+    done < <(find . \( -type d \( -exec [ -f {}/.git ] \;  \) -prune \) -o \( -type f -not -path "./install/*" \) -print0)
+
+    # git submodules to be installed
+    while IFS=  read -r -d $'\0'; do
+      CONTENT+=("$REPLY")
+    done < <(find . \( -type d \( -exec [ -f {}/.git ] \;  \) \) -print0)
+
+    for c in "${CONTENT[@]}"; do
+      target="/$(realpath --relative-to="$ROOT" "$c")"
+      
+      destination=$target
+
+      if [ -d "$target" ]; then
+        target="$target/"
+      fi
+
+      if [[ -L "$target" ]] && [ "$(readlink -f $target)" == "$(realpath $c)" ]; then
+          echo "Skipping $(realpath $c)"
+          continue
+      fi
+      
+      if [[ $c == *.delete ]]; then
+          target="${target:0:-7}"
+          if [ -f "$target" ]; then
+            echo "Removing $destination..."
+            mkdir -p "$TRASH/$destination"
+            rsync --remove-source-files "$target" "$TRASH/$destination"
+            echo -e "\tMoved $target to $TRASH/$destination"
+          else
+            echo "Skipping $(realpath $c)"
+          fi
+          continue
+      fi
+
+      echo "Installing $c to $target..."
+
+      if [ -f "$target" ]; then
+          mkdir -p "$TRASH/$(dirname $target)"
+          rsync --remove-source-files "$target" "$TRASH/$(dirname $target)"
+          echo -e "\tMoved $target to $TRASH/$(dirname $target)"
+      fi
+
+      if [ -f "$c" ]; then
+        mkdir -p $(dirname $target)
+      fi
+
+      ln -s "$(realpath $c)" "$target"
+      echo -e "\tSymlinked $target to $c"
     done
     popd >/dev/null
     echo "Finished installing all configs."
