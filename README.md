@@ -36,6 +36,8 @@ Done. A temporary copy of all the tools will be stored in `/var/tmp/qcr` when yo
 
 _Note: A `~/bin` directory can be created if it doesn't exist by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will need to log out and back in to source it for the first time after you create it. It's good practice to put any other user defined scripts that you want executable from any directory in `~/bin/`._
 
+_Note: If using system configs tool please intall to '/usr/local/bin' after more extensive testing this will become the prefered installation location in all circumstances._
+
 ## Git-based installation
 
 1. Clone the repository
