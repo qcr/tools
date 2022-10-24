@@ -12,7 +12,7 @@ repo_dir="$(dirname "$(dirname "$0")")"
 latest="$(git -C "$repo_dir" ls-remote 2>/dev/null | \
   grep HEAD | cut -f 1 || true)"
 
-if [ "$(git -C "$repo_dir")" == "$latest"]; then
+if [ "$(git -C "$repo_dir")" == "$latest" ]; then
   printf "\nAlready up-to-date ('${latest:0:8}'). Exiting."\n
 fi
 
