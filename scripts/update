@@ -16,8 +16,18 @@ if [ "$(git -C "$repo_dir")" == "$latest" ]; then
   printf "\nAlready up-to-date ('${latest:0:8}'). Exiting."\n
 fi
 
+local_changes=$(git status --porcelain=v1 2>/dev/null | wc -l)
+
 printf "\nUpdating tools in '$repo_dir' to '${latest:0:8}'...\n\n"
-git -C "$repo_dir" stash
+
+if [ "$local_changes" != "0" ]; then
+  git -C "$repo_dir" stash
+fi
+
 git -C "$repo_dir" checkout "$latest"
-git -C "$repo_dir" stash pop || true
+
+if [ "$local_changes" != "0" ]; then
+  git -C "$repo_dir" stash pop || true
+fi
+
 printf "\nDone.\n"
