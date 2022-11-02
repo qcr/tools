@@ -20,6 +20,8 @@ local_changes=$(git status --porcelain=v1 2>/dev/null | wc -l)
 
 printf "\nUpdating tools in '$repo_dir' to '${latest:0:8}'...\n\n"
 
+git -C "$repo_dir" fetch
+
 if [ "$local_changes" != "0" ]; then
   git -C "$repo_dir" stash
 fi
