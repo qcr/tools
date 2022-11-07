@@ -2,7 +2,8 @@
 #
 # Manages syncing between remote and local copies of the system-configs
 # tracking a new system configuration file
-# set -euo pipefail
+#
+# For more details, see https://docs.qcr.ai/reference/resources/config_tracking_tool/
 
 TOKEN=$(cat <<EOF
 -----BEGIN PGP MESSAGE-----

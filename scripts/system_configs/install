@@ -4,53 +4,9 @@
 # Installs all system configuration files for a given hostname
 # 
 # To install all saved system configuration files:
-#     qcr system_configs install [hostname]
+#     qcr system_configs install
 #
-# Note: the machine's hostname, as determined by the `hostname` command, will
-# be used if called with no arguments
-# 
-# TODO: needs to be updated to use robot-specific configuration repositories
-# This will search for all files in a repository called
-# `qcr/system_configs_<hostname>, and install them onto the current system using
-# the symbolic link method described above. For example on a system with
-# hostname `guiabot`, all files shown in `qcr/system_configs_guiabot` will be
-# linked into the system by doing the following:
-# 
-# 1. Any existing file at the corresponding location will be moved from
-#    `/path/to/file/name` to `/path/to/file/name.bak` 
-# 2. A symbolic link will be inserted at the corresponding location pointing to
-#    the tracked file (i.e. `/path/to/file/name` will now point to
-#    `<system_configs_guiabot_repo>/path/to/file/name`)
-# set -euo pipefail
-
-###########OVERVIEW OF CONFIG DATA ACCESS#######################
-#
-#                                                                                                                                                                            
-#                      +-------------------+                                                                                                                                 
-#                      |    QCR TOOLS      |                                                                                                                                 
-#                      +---------|---------+                                                                                                                                 
-#                                |                                                                                                                                           
-#                                |                                                                                                                                           
-#                                |                                                                                                                                           
-#+------------+        +------------------+       +------------------------------+                                                                                           
-#| <HOSTNAME> ---------- install_configs  |-------| <HOSTNAME>_system_config repo---------------------+ Git repo internal folder structure                                   
-#+------------+        +------------------+       +------------------------------+                    | <hostname>-<hwVariant>-<default*>                                    
-#  (Including                                      eg https://github.com/qcr/robot_system_configs     | *single instance of deafult                                          
-#  Robot Number)                                   qcr = default "gitOrg"                             |eg:                                                                   
-#  eg husky-1                                                                                         |husky-1-x86-default
-#  eg husky-1                                                                                         | - install_script (not linked into filesystem)                                                   
-#                                                                                                     | - home                                                               
-#                                                                                                     |  - ...etc                                                            
-#                                                                                                     | - opt                                                                
-#                                                                                                     |  - ...etc                                                            
-#                                                                                                     | husky-1-tx2                                                          
-#                                                                                                     |  ...etc                                                              
-#                                                                                                     | husky-1-pi4                                                          
-#                                                                                                     |  ...etc                                                              
-#                                                                                                     | husky-1-x86-rtos                                                     
-#                                                                                                     |  ...etc                                                              
-#                                                                                                                            
-#
+# For more details, see https://docs.qcr.ai/reference/resources/config_tracking_tool/
 
 TOKEN=$(cat <<EOF
 -----BEGIN PGP MESSAGE-----

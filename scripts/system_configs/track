@@ -1,27 +1,12 @@
 #!/usr/bin/env bash
 #
-# Allows tracking a new system configuration file
+# Allows tracking a new system configuration file or directory
 #
 # To start tracking a new system file:
-#     qcr system_configs track_file <full_path_to_config> [hostname]
+#     qcr system_configs track file|directory
 #
-# Note: the machine's hostname, as determined by the `hostname` command, will
-# be used if called with only 1 argument
-# 
-# TODO: needs to be updated to use robot-specific configuration repositories
-# The file is added to a repository, in a repository called
-# `qcr/<hostname>_system_config`, and then symbolically linked back into the
-# current system. For example, `qcr system_configs track_file /etc/fstab` on a
-# machine with hostname `guiabot` will do the following:
-# 
-# 1. Make a backup of `/etc/fstab` at `/etc/fstab.bak`
-# 2. Move `/etc/fstab` to `<guiabot_system_config_repo>/etc/fstab`
-# 3. Place a symbolic link at `/etc/fstab` pointing to
-#    `<guiabot_system_config_repo>/etc/fstab`
-# 
-# The `/etc/fstab` file can now be edited as normal, with the added benefit
-# that any customisations you do will be automatically tracked by the
-# guiabot_system_config repository. These changes can then be committed there.
+# For more details, see https://docs.qcr.ai/reference/resources/config_tracking_tool/
+
 set -euo pipefail
 
 function _root_check() {
@@ -188,9 +173,9 @@ ROOT=$LOCAL_PATH/$GH_REPO/$VARIANT/
 
 mkdir -p $ROOT
 
-if [ -z "$TARGET_FILES" ]; then
+if [ ${#TARGET_FILES[@]} -eq 0 ]; then
   printf "\e[31m%s\e[0m\n" \
-    "ERROR: please provide path to a config file as argument."
+    "ERROR: please provide path to a file or directory."
   exit 1;
 fi
 
