@@ -32,7 +32,7 @@ function _track() {
   FILES=("$@")
   
   for TARGET_FILE in "${FILES[@]}"; do
-    if [ -L "$TARGET_FILE" ] && [ "$RESTORE" == "0" ]; then
+    if [ -L "$TARGET_FILE" ] && [ "$RESTORE" == "0" ] && [ "DELETE" == "0"]; then
       printf "\e[31m%s\e[0m\n" \
         "ERROR: config file already appears to be a symlink. Not using."
       continue;
