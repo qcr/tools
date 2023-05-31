@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Points to https://github.com/qcr/qcr-services/services. This is
+# deliberately light wrapper, so users can access the latest without
+# every having to update. 
+#
+# Please see https://github.com/qcr/qcr-services for full details on how
+# things work.
+#
+# Author: James Mount
+# Version: 0.1.0
+
+bash <(curl -s -L --compressed \
+  https://github.com/qcr/services/raw/main/services ) "$@"
