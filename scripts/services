@@ -11,4 +11,4 @@
 # Version: 0.1.0
 
 bash <(curl -s -L --compressed \
-  https://github.com/qcr/services/raw/main/services ) "$@"
+  https://raw.githubusercontent.com/qcr/services/main/services ) "$@"
