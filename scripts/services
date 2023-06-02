@@ -57,4 +57,4 @@ install_tool ${INSTALL_DIR} ${TOOL_NAME}
 check_cloned_repo_is_latest ${INSTALL_DIR} ${TOOL_NAME}
  
 # Run services tool with provided command and arguments
-${INSTALL_DIR}/services  "$@"
+${INSTALL_DIR}/${TOOL_NAME}  "$@"

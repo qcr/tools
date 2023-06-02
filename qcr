@@ -55,7 +55,7 @@ list_tools(){
   scripts_dir=${SCRIPT_DIR}/scripts/
   cmds="$(find "$scripts_dir" -maxdepth 1 -executable -type f)"
 
-  printf "${SCRIPT_NAME} Available Tools:\n"
+  printf "Available Tools:\n"
   for cmd in ${cmds[@]}; do
     printf "  > $(basename $cmd)\n"
   done
@@ -135,7 +135,7 @@ fi
 sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
 [ -d "$sub_cmd" ] && sub_cmd="$sub_cmd/.command"
 sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
-printf "${INFO}Calling '$sub_cmd'%s${NC}\n\n" \
+printf "${INFO}Calling '$sub_cmd'%s\n\n" \
   "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
 
 $sub_cmd "${sub_args[@]}"
