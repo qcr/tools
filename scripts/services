@@ -1,14 +1,60 @@
 #!/usr/bin/env bash
 #
-# Points to https://github.com/qcr/qcr-services/services. This is
-# deliberately light wrapper, so users can access the latest without
-# every having to update. 
+# A light wrapper for using the services tool via qcr command. 
+# This is deliberately light, so that users should never 
+# have to update this script once they have it, but will
+# always have access to the latest service tool.
 #
-# Please see https://github.com/qcr/qcr-services for full details on how
-# things work.
+# It installs (git clones) the services tool if it doesn't
+# exist, and then calls the services tool entry point script.
+# Information on the services tool can be found at:
+#     https://github.com/qcr/services
+# 
+# For usage on how to use the services tool run: 
+#     qcr services -h
 #
 # Author: James Mount
-# Version: 0.1.0
+# Version: 0.2.0
 
-bash <(curl -s -L --compressed \
-  https://raw.githubusercontent.com/qcr/services/main/services ) "$@"
+
+#################
+### VARIABLES ###
+#################
+
+# Tool name
+TOOL_NAME="$(basename $(readlink -f $0))"
+
+# The directory of containing this script
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# The install directory to the tools directory
+INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
+
+# The URL for this tool's repo
+REPO_URL="https://github.com/qcr/services"
+
+
+#################
+### FUNCTIONS ###
+#################
+
+
+
+############
+### MAIN ###
+############
+
+# Source common
+source $(dirname ${SCRIPT_DIR})/common
+
+# Bail if git isn't found
+git_command_exists
+
+# Install tool, if required
+install_tool ${INSTALL_DIR} ${TOOL_NAME}
+
+# check if latest
+check_cloned_repo_is_latest ${INSTALL_DIR} ${TOOL_NAME}
+ 
+# Run services tool with provided command and arguments
+${INSTALL_DIR}/services  "$@"

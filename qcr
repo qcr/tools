@@ -5,99 +5,116 @@
 # etc). 
 # 
 # This is also invoked by the `qcr_standalone` wrapping script.
+#
+# Author: B. Talbot
+# Version: 0.7.0
 
 set -euo pipefail
-_this="$(readlink -f $0)"
-_this_dir="$(dirname "$_this")"
+
+#################
+### VARIABLES ###
+#################
 
 
-################################################################################
-########################### Variables and functions ############################
-################################################################################
-
-INFO='\033[0;35m[INFO] '
-WARN='\033[0;33m[WARN] '
-ERROR='\033[0;31m[ERROR] '
-NC='\033[0m'
-
-usage_text="$(basename "$_this") -- QCR script for access to all our shared tools
-
-USAGE:
-
-    Run a command located in $_this_dir/scripts/my_command:
-        $(basename "$_this") my_command
-
-    Run a subcommand located in $_this_dir/scripts/my_commands/subcommand
-        $(basename "$_this") my_commands subcommand
-
-    Print this help text:
-        $(basename "$_this") --help
-
-OPTION DETAILS:
-
-    -h, --help
-            Show this help menu.
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
 
 
-FURTHER DETAILS:
+#################
+### FUNCTIONS ###
+#################
+
+print_usage() {
+  printf "The QCR Script - access to all our shared tools
+
+Usage:
+  qcr [-c|--use-cached] [-h|--help] [-l|--list] <tools> <sub-command> <arguments>
+
+Arguments:
+  -c|--use-cached   ignore checking for updates, use the cached version of qcr and tools (not yet implemented)
+  -h|--help         show this help menu
+  -l|--list         list available commands
+
+Examples:
+  Print the list of available tools: qcr -l
+  Print the services tool help menu: qcr services -h
+
+
+Further Details:
 
     Please open an issue in the QCR tools repository for questions, support, or
-    to report bugs:
-        https://github.com/qcr/tools/issues
+    to report bugs: https://github.com/qcr/tools/issues
+  
 "
 
-################################################################################
-################################ Main execution ################################
-################################################################################
-
-# Bail if git isn't found
-command -v git >& /dev/null || {
-  printf "${ERROR}%s${NC}\n" "Command 'git' was not found, please install"
-  exit 1
+  exit 0
 }
 
-# Check whether installed version is the latest (flagging if there are updates
-# available, or update check failed)
-latest="$(git -C "$_this_dir" ls-remote 2>/dev/null | \
-  grep HEAD | cut -f 1 || true)"
-installed="$(git -C "$_this_dir" rev-parse HEAD)"
-if [ -z "$latest" ]; then
-  printf "${WARN}%s${NC}\n" \
-    "Check for latest tools failed; using cached version in '$_this_dir'."
-elif [ "$latest" != "$installed" ]; then
-  printf "${WARN}%s\n%s\n\t%s${NC}\n\n" \
-    "Old version (${installed:0:8}) found in '$_this_dir'." \
-    "Update to latest (${latest:0:8}) using:" \
-    "qcr update"
-fi
+list_tools(){
+  scripts_dir=${SCRIPT_DIR}/scripts/
+  cmds="$(find "$scripts_dir" -maxdepth 1 -executable -type f)"
+
+  printf "${SCRIPT_NAME} Available Tools:\n"
+  for cmd in ${cmds[@]}; do
+    printf "  > $(basename $cmd)\n"
+  done
+
+  # TODO - remove once systems_config has moved elsewhere
+  printf "  > system_configs\n"
+
+  exit 0
+}
+
+
+############
+### MAIN ###
+############
+
+# Source common
+source common
+
+
+# Bail if git isn't found
+git_command_exists
+
+# Check if latest version of qcr repo, pass with empty name 
+# so prints 'qcr update' and not 'qcr update qcr'
+check_cloned_repo_is_latest ${SCRIPT_DIR} ""
+
 
 # Split args into what is parsed here, and what goes to a subcommand
-sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | \
-  head -n 1 | cut -f1 -d: || echo "$(($#+1))")
+sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | head -n 1 | cut -f1 -d: || echo "$(($#+1))")
 main_args=( "${@:1:$((sub_index-1))}")
 sub=( "${@:$sub_index}" )
+ 
 
-# Process main command arguments
-parsed=$(getopt -o h --long help -n "$(basename "$_this")" \
-  -- "${main_args[@]}")
-eval set -- "$parsed"
+# Process main arguments using getopt command
+PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o chl --long use-cached,help,long -- "${main_args[@]}")
+USE_CACHED=false
+eval set -- "${PARSED_ARGS}"
 while true; do
-  case "$1" in
-    -h|--help)
-      echo "$usage_text" ; exit 0 ;;
-    --)
-      shift ; break ;;
+  case "$1" in 
+    -h|--help) 
+      print_usage ;;
+    -l|--list)
+      list_tools ;;
+    -c|--use-cached)
+      USE_CACHED=true; shift ;;
+    # -- indicates end of arguments, break while loop
+    --) shift; break ;;
+    # invalid option was passed, print usage
     *)
-      # We'll never get here
-      printf "${ERROR}%s\n${NC}" \
-        "Option '$1' to '$(basename "$_this")' is unknown" ; shift; exit 1 ;;
+      printf "${ERROR} Unrecognized option '$1'\n" 
+      print_usage 
+      exit 1 ;;    
   esac
 done
 
+
 # Divert to selected command
-scripts_dir="$_this_dir/scripts"
-cmds="$(find "$scripts_dir" -executable -type f | \
-  sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
+scripts_dir="${SCRIPT_DIR}/scripts"
+cmds="$(find "$scripts_dir" -executable -type f | sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
 cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
@@ -105,13 +122,14 @@ cmd="$(echo "$cmds" | while read c; do \
 
 if [ -z "$cmd" ]; then
   if [ ${#sub[@]} -gt 0 ]; then
-    printf "\n${ERROR}No command matched '%s'.${NC}\n\n" "$(echo "${sub[@]}")"
+    printf "\n${ERROR}No command matched '%s'.\n\n" "$(echo "${sub[@]}")"
   fi
   printf '%s\n' \
     'Please make a call that matches one of the following available commands:'
   printf '%s\n' "${cmds[@]}" | sed 's/^/\t/' | sort
   exit 1
 fi
+
 
 # Execute the command
 sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
@@ -120,18 +138,4 @@ sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 printf "${INFO}Calling '$sub_cmd'%s${NC}\n\n" \
   "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
 
-help=1
-for a in "${sub_args[@]}"; do 
-  [[ "$a" == "--help" ]] || [[ "$a" == "-h" ]] && help=0
-done
-
-if [ $help -eq 0 ]; then
-  doc="$(cat "$sub_cmd" | \
-    sed -n '/^[^#]/q; s/^# \?//; 1{/^!\//d}; /./,$!d; p')"
-  [ -n "$doc" ] && echo "$doc" || \
-    printf "${ERROR}%s\n\t%s${NC}\n\n" \
-    "No help documentation found. Request documentation from the author here:" \
-    "https://github.com/qcr/tools/issues"
-else
-  $sub_cmd "${sub_args[@]}"
-fi
+$sub_cmd "${sub_args[@]}"
