@@ -9,7 +9,7 @@
 # Author: B. Talbot
 # Version: 0.7.0
 
-set -euo pipefail
+set -uo pipefail
 
 #################
 ### VARIABLES ###
@@ -54,13 +54,19 @@ Further Details:
 }
 
 list_tools(){
-  scripts_dir=${SCRIPT_DIR}/scripts
-  cmds="$(find "$scripts_dir" -executable -type f | sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
-
+  tools="$(get_tools)"
   printf "Available Tools:\n"
-  printf '%s\n' "${cmds[@]}" | sed 's/^/\t/' | sort
+  printf '%s\n' "${tools[@]}" | sed 's/^/\t/' | sort
 
   exit 0
+}
+
+get_tools(){
+  scripts_dir=${SCRIPT_DIR}/scripts
+  tools="$(find "$scripts_dir" -executable -type f | sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
+
+  echo "${tools[@]}"
+
 }
 
 
@@ -78,33 +84,33 @@ git_command_exists
 sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | head -n 1 | cut -f1 -d: || echo "$(($#+1))")
 main_args=( "${@:1:$((sub_index-1))}")
 sub=( "${@:$sub_index}" )
- 
 
-# Process main arguments using getopt command
-PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o 'chlT:' --long 'use-cached,help,list,tool-dir:' -- "${main_args[@]}")
+# Process main arguments using getopt command, oif there are any
 USE_CACHED=false
 TOOL_DIR=false
-eval set -- "${PARSED_ARGS}"
-while true; do
-  case "$1" in 
-    -h|--help) 
-      print_usage ;;
-    -l|--list)
-      list_tools ;;
-    -c|--use-cached)
-      USE_CACHED=true; shift ;;
-    -T|--tool-dir)
-      TOOL_DIR=$2; shift 2 ;;
-    # -- indicates end of arguments, break while loop
-    --) shift; break ;;
-    # invalid option was passed, print usage
-    *)
-      printf "${ERROR} Unrecognized option '$1'\n" 
-      print_usage 
-      exit 1 ;;    
-  esac
-done
-
+if [ ! ${#main_args[@]} -eq 0 ]; then
+  PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'chlT:' --long 'use-cached,help,list,tool-dir:' -- "${main_args[@]}")
+  # eval set -- "${PARSED_ARGS}"
+  while true; do
+    case "$1" in 
+      -h|--help) 
+        print_usage ;;
+      -l|--list)
+        list_tools ;;
+      -c|--use-cached)
+        USE_CACHED=true; shift ;;
+      -T|--tool-dir)
+        TOOL_DIR=$2; shift 2 ;;
+      # -- indicates end of arguments, break while loop
+      --) shift; break ;;
+      # invalid option was passed, print usage
+      *)
+        printf "${ERROR}Unrecognized option '$1'\n" 
+        print_usage 
+        exit 1 ;;    
+    esac
+  done
+fi
 
 # Check if latest version of qcr repo, pass with empty name 
 # so prints 'qcr update' and not 'qcr update qcr'

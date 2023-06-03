@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+# A light wrapper for using the latex_templates tool via qcr command. 
+# This is deliberately light, so that users should never 
+# have to update this script once they have it, but will
+# always have access to the latest service tool.
+#
+# It installs (git clones) the latex_templates tool if it doesn't
+# exist, and then calls the latex_templates tool entry point script.
+# Information on the latex_templates tool can be found at:
+#     https://github.com/qcr/latex-templates
+# 
+# For usage on how to use the latex_templates tool run: 
+#     qcr latex_templates -h
+#
+# Author: James Mount
+# Version: 0.2.0
+
+
+#################
+### VARIABLES ###
+#################
+
+
+# The URL for this tool's repo
+REPO_URL="https://github.com/qcr/latex-templates"
+
+# Tool name
+TOOL_NAME="$(basename $(readlink -f $0))"
+
+# The directory of containing this script
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# The install directory to the tools directory
+INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
+
+
+#################
+### FUNCTIONS ###
+#################
+
+
+
+############
+### MAIN ###
+############
+
+
+# Get arguments passed by qcr script, 
+# first arguments passed is:
+#   USE_CACHED
+USE_CACHED="${@:1:1}"
+ARGS=( "${@:2}" )
+
+# Source common
+source $(dirname ${SCRIPT_DIR})/common
+
+# Bail if git isn't found
+git_command_exists
+
+# Install tool, if required
+install_tool ${INSTALL_DIR} ${TOOL_NAME}
+
+# check if latest
+if [ ${USE_CACHED} == false ]; then
+    check_cloned_repo_is_latest ${INSTALL_DIR} ${TOOL_NAME}
+fi
+ 
+# Run services tool with provided command and arguments
+${INSTALL_DIR}/${TOOL_NAME}  "${ARGS[@]}"
