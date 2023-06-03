@@ -27,7 +27,7 @@ CYAN="\033[0;36m"
 WHITE="\033[0;37m"
 
 # Screen helpers
-INFO="${PURPLE}[INFO]${RESET} "
+INFO="${GREEN}[INFO]${RESET} "
 WARN="${YELLOW}[WARN]${RESET} "
 ERROR="${RED}[ERROR]${RESET} "
 
@@ -71,10 +71,16 @@ function check_cloned_repo_is_latest(){
     # Check to see if a cloned repo is the latest. Will
     # print a warning if unable to check and state using the
     # cached version. Will tell the user to run an update if
-    # using an outdated version.
+    # using an outdated version. 
+    # 
+    # Returns:
+    #       0 - if repo is latest
+    #       1 - if repo is outdated
+    #       2 - if failed to perform checck
     #
     # Usage:
     #   check_cloned_repo_is_latest <REPO_DIR> <TOOL_NAME>
+    #   retval=$?
 
     REPO_DIR=$1
     TOOL_NAME=$2
@@ -85,10 +91,14 @@ function check_cloned_repo_is_latest(){
     installed="$(git -C "$REPO_DIR" rev-parse HEAD)"
     if [ -z "$latest" ]; then
         printf "${WARN}check for latest tools failed; using cached version in '$REPO_DIR'.\n"
+        return 2
     elif [ "$latest" != "$installed" ]; then
-        printf "${WARN}${YELLOW} - %s\n\t    %s\t%s\n\n${NORMAL}" \
+        printf "${WARN}${YELLOW} - %s\n\t    %s\t%s\n\n${RESET}" \
         "Old version (${installed:0:8}) found in '$REPO_DIR'." \
         "Update to latest (${latest:0:8}) using:" \
         "qcr update ${TOOL_NAME} (not yet implemented)"
+        return 1
     fi
+
+    return 0
 }

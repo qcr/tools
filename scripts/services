@@ -21,6 +21,10 @@
 ### VARIABLES ###
 #################
 
+
+# The URL for this tool's repo
+REPO_URL="https://github.com/qcr/services"
+
 # Tool name
 TOOL_NAME="$(basename $(readlink -f $0))"
 
@@ -29,9 +33,6 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # The install directory to the tools directory
 INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
-
-# The URL for this tool's repo
-REPO_URL="https://github.com/qcr/services"
 
 
 #################
@@ -44,6 +45,12 @@ REPO_URL="https://github.com/qcr/services"
 ### MAIN ###
 ############
 
+# Get arguments passed by qcr script, 
+# first arguments passed is:
+#   USE_CACHED
+USE_CACHED="${@:1:1}"
+ARGS=( "${@:2}" )
+
 # Source common
 source $(dirname ${SCRIPT_DIR})/common
 
@@ -54,7 +61,9 @@ git_command_exists
 install_tool ${INSTALL_DIR} ${TOOL_NAME}
 
 # check if latest
-check_cloned_repo_is_latest ${INSTALL_DIR} ${TOOL_NAME}
+if [ ${USE_CACHED} == false ]; then
+    check_cloned_repo_is_latest ${INSTALL_DIR} ${TOOL_NAME}
+fi
  
 # Run services tool with provided command and arguments
-${INSTALL_DIR}/${TOOL_NAME}  "$@"
+${INSTALL_DIR}/${TOOL_NAME}  "${ARGS[@]}"
