@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
-# A light wrapper for using the <TOOL-NAME> tool via qcr command. 
+# A light wrapper for using the system-configs tool via qcr command. 
 # This is deliberately light, so that users should never 
 # have to update this script once they have it, but will
 # always have access to the latest service tool.
 #
-# It installs (git clones) the <TOOL-NAME> tool if it doesn't
-# exist, and then calls the <TOOL-NAME> tool entry point script.
-# Information on the <TOOL-NAME> tool can be found at:
-#     https://github.com/qcr/<TOOL-NAME>
+# It installs (git clones) the system-configs tool if it doesn't
+# exist, and then calls the system-configs tool entry point script.
+# Information on the system-configs tool can be found at:
+#     https://github.com/qcr/system-configs
 # 
-# For usage on how to use the <TOOL-NAME> tool run: 
-#     qcr <TOOL-NAME> -h
+# For usage on how to use the system-configs tool run: 
+#     qcr system-configs -h
 #
 # Author: James Mount
 # Version: 0.2.0
@@ -23,7 +23,7 @@
 
 
 # The URL for this tool's repo
-REPO_URL="https://github.com/qcr/<TOOL-NAME>"
+REPO_URL="https://github.com/qcr/system-configs"
 
 # Tool name
 TOOL_NAME="$(basename $(readlink -f $0))"
