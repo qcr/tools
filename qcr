@@ -29,7 +29,7 @@ print_usage() {
   printf "The QCR Script - access to all our shared tools
 
 Usage:
-  qcr [-c|--use-cached] [-h|--help] [-l|--list] [-L|--local <directory>] <tools> <sub-command> <arguments>
+  qcr [-c|--use-cached] [-h|--help] [-l|--list] [-T|--tool-dir <directory>] <tools> <sub-command> <arguments>
 
 Arguments:
   -c|--use-cached   ignore checking for updates, use the cached version of qcr and tools (not yet implemented)
@@ -75,7 +75,7 @@ get_tools(){
 ############
 
 # Source common
-source common
+source ${SCRIPT_DIR}/common
 
 # Bail if git isn't found
 git_command_exists
@@ -83,20 +83,25 @@ git_command_exists
 # Split args into what is parsed here, and what goes to a subcommand
 sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | head -n 1 | cut -f1 -d: || echo "$(($#+1))")
 main_args=( "${@:1:$((sub_index-1))}")
+if [[ " ${main_args[*]} " =~ " -T " ]]; then # if main args contain -T, increase sub_index by 1
+  sub_index=$((sub_index+1))
+fi
+main_args=( "${@:1:$((sub_index-1))}")
 sub=( "${@:$sub_index}" )
+
 
 # Process main arguments using getopt command, oif there are any
 USE_CACHED=false
 TOOL_DIR=false
 if [ ! ${#main_args[@]} -eq 0 ]; then
   PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'chlT:' --long 'use-cached,help,list,tool-dir:' -- "${main_args[@]}")
-  # eval set -- "${PARSED_ARGS}"
+  eval set -- "${PARSED_ARGS}"
   while true; do
     case "$1" in 
       -h|--help) 
-        print_usage ;;
+        print_usage; ;;
       -l|--list)
-        list_tools ;;
+        list_tools; ;;
       -c|--use-cached)
         USE_CACHED=true; shift ;;
       -T|--tool-dir)
@@ -140,7 +145,7 @@ fi
 # Get the tool to run, and its arguments
 if [ ! ${TOOL_DIR} == false  ]; then
   if [ ! -d ${TOOL_DIR} ]; then
-    printf "${ERROR}the tool directory ${TOOL_DIR} does not exist."
+    printf "${ERROR}the tool directory ${TOOL_DIR} does not exist.\n"
     exit 1
   fi
   tool="${TOOL_DIR}/$(echo "$cmd" | sed 's/ /\//g')"

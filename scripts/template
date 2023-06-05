@@ -46,8 +46,9 @@ INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
 ############
 
 # Get arguments passed by qcr script, 
-# first arguments passed is:
+# Arguments passed are:
 #   USE_CACHED
+#   ARGS_TO_TOOL
 USE_CACHED="${@:1:1}"
 ARGS=( "${@:2}" )
 

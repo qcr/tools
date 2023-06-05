@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
-# A light wrapper for using the latex_templates tool via qcr command. 
+# A light wrapper for using the latex-templates tool via qcr command. 
 # This is deliberately light, so that users should never 
 # have to update this script once they have it, but will
 # always have access to the latest service tool.
 #
-# It installs (git clones) the latex_templates tool if it doesn't
-# exist, and then calls the latex_templates tool entry point script.
-# Information on the latex_templates tool can be found at:
+# It installs (git clones) the latex-templates tool if it doesn't
+# exist, and then calls the latex-templates tool entry point script.
+# Information on the latex-templates tool can be found at:
 #     https://github.com/qcr/latex-templates
 # 
-# For usage on how to use the latex_templates tool run: 
-#     qcr latex_templates -h
+# For usage on how to use the latex-templates tool run: 
+#     qcr latex-templates -h
 #
 # Author: James Mount
 # Version: 0.2.0
@@ -47,8 +47,9 @@ INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
 
 
 # Get arguments passed by qcr script, 
-# first arguments passed is:
+# Arguments passed are:
 #   USE_CACHED
+#   ARGS_TO_TOOL
 USE_CACHED="${@:1:1}"
 ARGS=( "${@:2}" )
 
