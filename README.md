@@ -122,6 +122,8 @@ To add a new tool:
 3. Make sure your tool is well documented, at the very least it should have a comment block at the top describing what the tool does and how to use
 4. Commit and push the changes
 
+For an example of a standalone tool see the [create_tag](/scripts/create-tag) tool. For an example of a tool stored in a separate repository see the [Services](https://github.com/qcr/services) tool.
+
 # Reporting Tool Issues
 
 Please use the [GitHub Issues](https://github.com/qcr/tools/issues) associated with this repository to highlight any issues with a tool or if you believe a tool's feature set should be expanded. Feel free to mention the creator of the tool, if known, using their GitHub user handle.

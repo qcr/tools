@@ -35,7 +35,7 @@ Arguments:
   -c|--use-cached   ignore checking for updates, use the cached version of qcr and tools (not yet implemented)
   -h|--help         show this help menu
   -l|--list         list available commands
-  -T|--tool-dir     specify the directory of the tool. Useful for local development.
+  -T|--tool-dir     specify the directory of the tool. Must start with '/' or '~/'. Useful for local development.
 
 Examples:
   Print the list of available tools: qcr -l
@@ -77,18 +77,19 @@ get_tools(){
 # Source common
 source ${SCRIPT_DIR}/common
 
+# Display heading
+display_heading "QCR TOOLS"
+
 # Bail if git isn't found
 git_command_exists
 
 # Split args into what is parsed here, and what goes to a subcommand
 sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | head -n 1 | cut -f1 -d: || echo "$(($#+1))")
 main_args=( "${@:1:$((sub_index-1))}")
-if [[ " ${main_args[*]} " =~ " -T " ]]; then # if main args contain -T, increase sub_index by 1
-  sub_index=$((sub_index+1))
-fi
-main_args=( "${@:1:$((sub_index-1))}")
 sub=( "${@:$sub_index}" )
 
+# echo "Main Args: ${main_args[@]}"
+# echo "Sub Args: ${sub[@]}"
 
 # Process main arguments using getopt command, oif there are any
 USE_CACHED=false
@@ -161,7 +162,8 @@ printf "${INFO}Calling '${YELLOW}$tool${RESET}'"
 if [ ! ${#tool_args[@]} -eq 0 ]; then
   printf " with args '${YELLOW}${tool_args[*]}${RESET}'"
 fi
-printf "\n"
+# printf "\n"
+
 
 # Either execute the command in scripts/<tool> passing
 # in USE_CACHED and the tool arguments. Or attempt to run
@@ -169,6 +171,7 @@ printf "\n"
 if [ ${TOOL_DIR} == false  ]; then
   $tool ${USE_CACHED} "${tool_args[@]}" # aim of this is to run the "installed" version
 else
+  printf "\n"
   $tool "${tool_args[@]}"               # aim of this is to run a local/developer version
 fi
 

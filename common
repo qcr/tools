@@ -93,12 +93,35 @@ function check_cloned_repo_is_latest(){
         printf "${WARN}check for latest tools failed; using cached version in '$REPO_DIR'.\n"
         return 2
     elif [ "$latest" != "$installed" ]; then
-        printf "${WARN}${YELLOW} - %s\n\t    %s\t%s\n\n${RESET}" \
-        "Old version (${installed:0:8}) found in '$REPO_DIR'." \
-        "Update to latest (${latest:0:8}) using:" \
-        "qcr update ${TOOL_NAME} (not yet implemented)"
+        printf "\n${WARN}${YELLOW}Old version (${installed:0:8}) found in '$REPO_DIR'.\n"
+        printf "\tUpdate to latest (${latest:0:8}) using: qcr update ${TOOL_NAME}${RESET}"
+        if [ ! "${TOOL_NAME}" == "" ]; then
+            printf " (not yet implemented, instead run 'rm -rf ${REPO_DIR}' and re-run)"
+        fi
+        printf "${RESET}\n\n"
         return 2
     fi
 
     return 0
+}
+
+
+function display_heading() {
+    # Prints a heading to the screen
+    #
+    # Usage:
+    #   display_heading "<HEADING TEXT>"
+
+    # $1 heading text
+    char="-"
+    text=" ${1:-} "
+    (( left_pad=(80 - ${#text})/2 ))
+    (( right_pad=(81 - ${#text})/2 ))
+    printf "${GREEN}"
+    printf "\n"; printf "%.0s$char" {1..80}; printf "\n"
+    printf "%.0s$char" $(seq 1 $left_pad)
+    printf "${WHITE}$text${GREEN}"
+    printf "%.0s$char" $(seq 1 $right_pad)
+    printf "\n"; printf "%.0s$char" {1..80}; printf "\n"
+    printf "${RESET}"
 }

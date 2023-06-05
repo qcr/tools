@@ -25,7 +25,10 @@
 # The URL for this tool's repo
 REPO_URL="https://github.com/qcr/services"
 
-# Tool name
+# Tool name - name of entry point script in the separate repo.
+# The recommendation is the script here in qcr/scripts matches
+# the name of the script in the separate repo. However,
+# can change TOOL_NAME if they are different.
 TOOL_NAME="$(basename $(readlink -f $0))"
 
 # The directory of containing this script
@@ -67,4 +70,9 @@ if [ ${USE_CACHED} == false ]; then
 fi
  
 # Run services tool with provided command and arguments
+printf "${INFO}Calling '${YELLOW}${INSTALL_DIR}/${TOOL_NAME}${RESET}'"
+if [ ! ${#ARGS[@]} -eq 0 ]; then
+  printf " with args '${YELLOW}${ARGS[*]}${RESET}'"
+fi
+printf "\n"
 ${INSTALL_DIR}/${TOOL_NAME}  "${ARGS[@]}"
