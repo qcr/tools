@@ -12,4 +12,4 @@
 # Version: 0.3.0
 
 bash <(curl -s -L --compressed \
-  https://github.com/qcr/code_templates/raw/main/qcr_templates ) "$@"
+  https://raw.githubusercontent.com/qcr/code-templates/main/code-templates) "$@"
