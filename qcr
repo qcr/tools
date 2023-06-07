@@ -72,7 +72,7 @@ list_tools(){
 ############
 
 # Source common
-source common
+source ${SCRIPT_DIR}/common
 
 
 # Bail if git isn't found
