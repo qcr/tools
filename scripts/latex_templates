@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# Points to https://github.com/qcr/latex_templates/qcr_latex_templates. This is
+# deliberately light wrapper, so users can access the latest templates without
+# every having to update. 
+#
+# Please see https://github.com/qcr/latex_templates for full details on how
+# things work, and instructions on how to add your own templates. The more
+# templates the merrier!
+#
+# Author: James Mount
+# Version: 0.1.0
+
+bash <(curl -s -L --compressed \
+  https://raw.githubusercontent.com/qcr/latex-templates/main/latex-templates ) "$@"
