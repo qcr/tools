@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
-# A light wrapper for using the services tool via qcr command. 
+# A light wrapper for using the latex-templates tool via qcr command. 
 # This is deliberately light, so that users should never 
 # have to update this script once they have it, but will
 # always have access to the latest service tool.
 #
-# It installs (git clones) the services tool if it doesn't
-# exist, and then calls the services tool entry point script.
-# Information on the services tool can be found at:
-#     https://github.com/qcr/services
+# It installs (git clones) the latex-templates tool if it doesn't
+# exist, and then calls the latex-templates tool entry point script.
+# Information on the latex-templates tool can be found at:
+#     https://github.com/qcr/latex-templates
 # 
-# For usage on how to use the services tool run: 
-#     qcr services -h
+# For usage on how to use the latex-templates tool run: 
+#     qcr latex-templates -h
 #
 # Author: James Mount
 # Version: 0.2.0
@@ -23,12 +23,9 @@
 
 
 # The URL for this tool's repo
-REPO_URL="https://github.com/qcr/services"
+REPO_URL="https://github.com/qcr/latex-templates"
 
-# Tool name - name of entry point script in the separate repo.
-# The recommendation is the script here in qcr/scripts matches
-# the name of the script in the separate repo. However,
-# can change TOOL_NAME if they are different.
+# Tool name
 TOOL_NAME="$(basename $(readlink -f $0))"
 
 # The directory of containing this script
@@ -47,6 +44,7 @@ INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
 ############
 ### MAIN ###
 ############
+
 
 # Get arguments passed by qcr script, 
 # Arguments passed are:
@@ -70,9 +68,4 @@ if [ ${USE_CACHED} == false ]; then
 fi
  
 # Run services tool with provided command and arguments
-printf "${INFO}Calling '${YELLOW}${INSTALL_DIR}/${TOOL_NAME}${RESET}'"
-if [ ! ${#ARGS[@]} -eq 0 ]; then
-  printf " with args '${YELLOW}${ARGS[*]}${RESET}'"
-fi
-printf "\n"
 ${INSTALL_DIR}/${TOOL_NAME}  "${ARGS[@]}"

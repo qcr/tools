@@ -9,7 +9,7 @@
 # Author: B. Talbot
 # Version: 0.7.0
 
-set -euo pipefail
+set -uo pipefail
 
 #################
 ### VARIABLES ###
@@ -29,16 +29,18 @@ print_usage() {
   printf "The QCR Script - access to all our shared tools
 
 Usage:
-  qcr [-c|--use-cached] [-h|--help] [-l|--list] <tools> <sub-command> <arguments>
+  qcr [-c|--use-cached] [-h|--help] [-l|--list] [-T|--tool-dir <directory>] <tools> <sub-command> <arguments>
 
 Arguments:
   -c|--use-cached   ignore checking for updates, use the cached version of qcr and tools (not yet implemented)
   -h|--help         show this help menu
   -l|--list         list available commands
+  -T|--tool-dir     specify the directory of the tool. Must start with '/' or '~/'. Useful for local development.
 
 Examples:
   Print the list of available tools: qcr -l
   Print the services tool help menu: qcr services -h
+  Attempt to execute 'tool_x' located at location /home/$USER/my_tool: qcr -T /home/${USER}/my_tool/tool_x
 
 
 Further Details:
@@ -52,18 +54,19 @@ Further Details:
 }
 
 list_tools(){
-  scripts_dir=${SCRIPT_DIR}/scripts/
-  cmds="$(find "$scripts_dir" -maxdepth 1 -executable -type f)"
-
+  tools="$(get_tools)"
   printf "Available Tools:\n"
-  for cmd in ${cmds[@]}; do
-    printf "  > $(basename $cmd)\n"
-  done
-
-  # TODO - remove once systems_config has moved elsewhere
-  printf "  > system_configs\n"
+  printf '%s\n' "${tools[@]}" | sed 's/^/\t/' | sort
 
   exit 0
+}
+
+get_tools(){
+  scripts_dir=${SCRIPT_DIR}/scripts
+  tools="$(find "$scripts_dir" -executable -type f | sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
+
+  echo "${tools[@]}"
+
 }
 
 
@@ -74,42 +77,52 @@ list_tools(){
 # Source common
 source ${SCRIPT_DIR}/common
 
+# Display heading
+display_heading "QCR TOOLS"
 
 # Bail if git isn't found
 git_command_exists
-
-# Check if latest version of qcr repo, pass with empty name 
-# so prints 'qcr update' and not 'qcr update qcr'
-check_cloned_repo_is_latest ${SCRIPT_DIR} ""
-
 
 # Split args into what is parsed here, and what goes to a subcommand
 sub_index=$(printf '%s\n' "$@" | grep -n '^[a-zA-Z]' | head -n 1 | cut -f1 -d: || echo "$(($#+1))")
 main_args=( "${@:1:$((sub_index-1))}")
 sub=( "${@:$sub_index}" )
- 
 
-# Process main arguments using getopt command
-PARSED_ARGS=$(getopt -a -n ${SCRIPT_NAME} -o chl --long use-cached,help,long -- "${main_args[@]}")
+# echo "Main Args: ${main_args[@]}"
+# echo "Sub Args: ${sub[@]}"
+
+# Process main arguments using getopt command, oif there are any
 USE_CACHED=false
-eval set -- "${PARSED_ARGS}"
-while true; do
-  case "$1" in 
-    -h|--help) 
-      print_usage ;;
-    -l|--list)
-      list_tools ;;
-    -c|--use-cached)
-      USE_CACHED=true; shift ;;
-    # -- indicates end of arguments, break while loop
-    --) shift; break ;;
-    # invalid option was passed, print usage
-    *)
-      printf "${ERROR} Unrecognized option '$1'\n" 
-      print_usage 
-      exit 1 ;;    
-  esac
-done
+TOOL_DIR=false
+if [ ! ${#main_args[@]} -eq 0 ]; then
+  PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'chlT:' --long 'use-cached,help,list,tool-dir:' -- "${main_args[@]}")
+  eval set -- "${PARSED_ARGS}"
+  while true; do
+    case "$1" in 
+      -h|--help) 
+        print_usage; ;;
+      -l|--list)
+        list_tools; ;;
+      -c|--use-cached)
+        USE_CACHED=true; shift ;;
+      -T|--tool-dir)
+        TOOL_DIR=$2; shift 2 ;;
+      # -- indicates end of arguments, break while loop
+      --) shift; break ;;
+      # invalid option was passed, print usage
+      *)
+        printf "${ERROR}Unrecognized option '$1'\n" 
+        print_usage 
+        exit 1 ;;    
+    esac
+  done
+fi
+
+# Check if latest version of qcr repo, pass with empty name 
+# so prints 'qcr update' and not 'qcr update qcr'
+if [ ${USE_CACHED} == false ]; then
+  check_cloned_repo_is_latest ${SCRIPT_DIR} ""
+fi
 
 
 # Divert to selected command
@@ -124,18 +137,47 @@ if [ -z "$cmd" ]; then
   if [ ${#sub[@]} -gt 0 ]; then
     printf "\n${ERROR}No command matched '%s'.\n\n" "$(echo "${sub[@]}")"
   fi
-  printf '%s\n' \
-    'Please make a call that matches one of the following available commands:'
-  printf '%s\n' "${cmds[@]}" | sed 's/^/\t/' | sort
+  printf "Please select from the following tools. "
+  list_tools
   exit 1
 fi
 
 
-# Execute the command
-sub_cmd="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
-[ -d "$sub_cmd" ] && sub_cmd="$sub_cmd/.command"
-sub_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
-printf "${INFO}Calling '$sub_cmd'%s\n\n" \
-  "$([ ${#sub_args[@]} -eq 0 ] || echo " with args '${sub_args[@]}'")"
+# Get the tool to run, and its arguments
+if [ ! ${TOOL_DIR} == false  ]; then
+  if [ ! -d ${TOOL_DIR} ]; then
+    printf "${ERROR}the tool directory ${TOOL_DIR} does not exist.\n"
+    exit 1
+  fi
+  tool="${TOOL_DIR}/$(echo "$cmd" | sed 's/ /\//g')"
+else
+  tool="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
+  [ -d "$tool" ] && tool="$tool/.command"
+fi
 
-$sub_cmd "${sub_args[@]}"
+tool_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
+
+# Print the command being run and the arguments
+printf "${INFO}Calling '${YELLOW}$tool${RESET}'"
+if [ ! ${#tool_args[@]} -eq 0 ]; then
+  printf " with args '${YELLOW}${tool_args[*]}${RESET}'"
+fi
+# printf "\n"
+
+
+# Either execute the command in scripts/<tool> passing
+# in USE_CACHED and the tool arguments. Or attempt to run
+# the script given the TOOL_DIR and the tool arguments.
+if [ ${TOOL_DIR} == false  ]; then
+  $tool ${USE_CACHED} "${tool_args[@]}" # aim of this is to run the "installed" version
+else
+  printf "\n"
+  $tool "${tool_args[@]}"               # aim of this is to run a local/developer version
+fi
+
+# Form of command above is 
+#   <TOOL_SCRIPT> <TOOL_DIR> <USE_CACHED> <TOOL ARGUMENTS>
+#   
+#   where <TOOL_SCRIPT> is the script being called in 
+#   qcr/scripts/<tool> and not the tool's standalone
+#   script.

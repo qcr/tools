@@ -5,7 +5,13 @@
 #     <title to put on pdf> \
 #     <contact email to put on pdf> \
 #     <url for the QR tag to point to>
+
+
 set -euo pipefail
+
+#################
+### VARIABLES ###
+#################
 
 JOBNAME="robot_tag"
 TMP_DIR="/tmp/robot_tag"
@@ -13,6 +19,61 @@ TMP_DIR="/tmp/robot_tag"
 IMAGE_URL="https://github.com/qcr/tools/raw/master/misc/qcr_header.jpg"
 IMAGE_TMP="$TMP_DIR/qcr_header.jpg"
 
+
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
+
+#################
+### FUNCTIONS ###
+#################
+
+function print_usage(){
+  printf "\nCreate a QR Code.
+
+Usage:
+  create_tag <TITLE> <EMAIL> <URL>
+
+"
+
+  exit 0
+}
+
+
+###################
+### MAIN SCRIPT ###
+###################
+
+# Source common
+source $(dirname ${SCRIPT_DIR})/common
+
+# Display Heading
+display_heading "CREATE QR TAG"
+
+# Get arguments passed by qcr script, 
+# Arguments passed are:
+#   USE_CACHED
+#   ARGS_TO_TOOL
+USE_CACHED="${@:1:1}"
+ARGS=( "${@:2}" )
+
+# Parse arguments
+PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'h' --long 'help' -- "${ARGS[@]}")
+eval set -- "${PARSED_ARGS}"
+while true; do
+  case "$1" in 
+    -h|--help) 
+      print_usage; ;;
+    --) shift; break ;;
+    # invalid option was passed, print usage
+    *)
+      printf "${ERROR}Unrecognized option '$1'\n" 
+      print_usage 
+      exit 1 ;;    
+  esac
+done
+
+# Check remaining arguments
 if [ $# -ne 3 ]; then
   printf "\e[31m%s\n\t%s\e[0m\n" \
     "Invalid arguments. Script requires precisely 3 arguments:" \

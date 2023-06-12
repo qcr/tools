@@ -6,14 +6,19 @@
 
 ![QCR tools in action](https://github.com/qcr/tools/wiki/qcr_tools.png)
 
-This repository contains the `qcr` script, which allows simple direct access to technical tools used internally at QCR. Although this repository is public for ease of installation, we don't expect these tools to be useful outside of QCR. Contributors to this repository should be aware that the repository is public, and choose what they commit accordingly.
+This repository contains the `qcr` script, which allows simple direct access to technical tools used internally at QCR. The aim of this repository and the `qcr` is two fold:
+1. For the repo to act as a place for odd tools that don't require an individual repo (e.g., the `create_tag` tool); and
+2. To allow QCR users to easily gain access to present and future tools without having to dig through the QCR GitHub Organisation.
+
+Please be aware, this repository is public for ease of installation but, we don't expect all the tools to be useful outside of QCR. Contributors to this repository should be aware that the repository is public, and choose what they commit accordingly.
 
 A list of the tools available can be found by simply running the `qcr` script. Some of the featured tools include:
 
-- **code_template** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (author [btalb](https://github.com/btalb))
-- **late_template** - starts a new latex project using one of [our latex templates](https://github.com/qcr/latex-templates) (author [jmount1992](https://github.com/jmount1992))
-- **create_tag** - allows the generation of a QR-QCR tag linked to a URL (author [btalb](https://github.com/btalb))
-- **system_configs** - a series of scripts for managing and tracking system configuration settings on shared systems (author [btalb](https://github.com/btalb))
+- **code-templates** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (author [btalb](https://github.com/btalb))
+- **latex-templates** - starts a new latex project using one of [our latex templates](https://github.com/qcr/latex-templates) (author [jmount1992](https://github.com/jmount1992))
+- **create-tag** - allows the generation of a QR-QCR tag linked to a URL (author [btalb](https://github.com/btalb))
+- **system-configs** - a series of scripts for managing and tracking system configuration settings on shared systems (author [btalb](https://github.com/btalb))
+- **services** - a series of scripts for managing services and start-up service configurations (author [jmount1992](https://github.com/jmount1992))
 
 ## Installing the tools
 
@@ -81,7 +86,7 @@ qcr
 
 # What is actually going on
 
-The `qcr` script runs the latest version of any tool in [the ./scripts/ directory of this repository](https://github.com/qcr/tools/tree/master/scripts). It does this by translating the following syntax:
+The `qcr` script calls the latest version of the desired tool in the [./scripts/](/scripts/) directory of this repository. It does this by translating the following syntax:
 
 ```
 qcr TOOL_NAME TOOL_ARG1 TOOL_ARG2 ...
@@ -94,13 +99,13 @@ Into the following command:
 
 ```
 
+For standalone tools (i.e., ones without a separate repo, for example the [create_tag](/scripts/create_tag) tool), the tool will be invoked as is with the passed arguments. For separate tools (i.e., ones with a separate repo, for example the [services tool](https://github.com/qcr/services)), the scripts contained in the [./scripts/](/scripts/) directory of this repository: install the tool; check for the latest version; and then invoke the individual tool with the passed arguments.
+
 ## Other special rules
 
 That's the general principle. There a couple of special cases that help improve the tool's flexibility and usability:
 
-- when no tool name is provided the script will either:
-  - print a help menu for `qcr -h` or `qcr --help` calls, or
-  - print the list of available commands
+- when no tool name is provided the script will print the list of available commands.
 - when a tool name is provided the script will go through the following process:
   1. select the deepest tool matching the start of the arguments, for example `qcr arg1 arg2 --arg3` will look for `./scripts/arg1/arg2` then `./scripts/arg1` then throw an error if none are found
   2. check if a central command has been requested in a file called `.command` (e.g. `./scripts/my_tool/{.command,mode_1,mode_2}` will support commands `qcr my_tool`, `qcr my_tool mode_1`, and `qcr my_tool mode_2`)
@@ -111,9 +116,13 @@ That's the general principle. There a couple of special cases that help improve 
 To add a new tool:
 
 1. Clone this repository, and make sure you are on the default branch
-2. Add the new bash tool script to the `./scripts/` directory of this repository
-3. Make sure your script is well documented, at the very least it should have a comment block at the top describing what the tool does and how to use
+2. Add the new bash tool script to the `./scripts/` directory of this repository.
+  - There is a [`template`](/scripts/template) for tools stored in separate repositories.
+  - Ensure the bash script is executable, run: `chmod 775 <script>` 
+3. Make sure your tool is well documented, at the very least it should have a comment block at the top describing what the tool does and how to use
 4. Commit and push the changes
+
+For an example of a standalone tool see the [create_tag](/scripts/create-tag) tool. For an example of a tool stored in a separate repository see the [Services](https://github.com/qcr/services) tool.
 
 # Reporting Tool Issues
 
