@@ -32,10 +32,10 @@ There are two options for installation: standalone and Git-based. Standalone, is
 cd /usr/bin/
 ```
 
-2. Download the standalone script and make it executable:
+2. Download the standalone script and make it executable (drop the two sudos if installing to `~/bin`):
 
 ```
-wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod +x qcr
+sudo wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && sudo chmod 775 qcr
 ```
 
 Done. The tool scripts will be stored in `/var/tmp/qcr` when you first run the `qcr` script to support offline access.
