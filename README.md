@@ -26,10 +26,10 @@ There are two options for installation: standalone and Git-based. Standalone, is
 
 ## Standalone installation
 
-1. Pick a directory on your PATH (`~/bin/` is usually the best choice):
+1. Pick a directory on your PATH (`/usr/bin/` is recommended on shared machines, or `~/bin` on personal machines):
 
 ```
-cd ~/bin/
+cd /usr/bin/
 ```
 
 2. Download the standalone script and make it executable:
@@ -38,13 +38,13 @@ cd ~/bin/
 wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod +x qcr
 ```
 
-Done. A temporary copy of all the tools will be stored in `/var/tmp/qcr` when you first run the `qcr` script to support offline access.
+Done. The tool scripts will be stored in `/var/tmp/qcr` when you first run the `qcr` script to support offline access.
 
 _Note: A `~/bin` directory can be created if it doesn't exist by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will need to log out and back in to source it for the first time after you create it. It's good practice to put any other user defined scripts that you want executable from any directory in `~/bin/`._
 
-_Note: If using system configs tool please intall to '/usr/local/bin' after more extensive testing this will become the prefered installation location in all circumstances.Sudo will need to be used for both 'wget' and 'chmod' commands._
-
 ## Git-based installation
+
+Recommended for personal machines only.
 
 1. Clone the repository
 
