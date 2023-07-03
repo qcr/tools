@@ -24,7 +24,7 @@
 
 # The URL for this tool's repo
 # Used for cloning - Recommend to use SSH
-REPO_URL="git@github.com:qcr/services"
+REPO_URL="git@github.com:qcr/services-config"
 
 # Tool name - name of entry point script in the separate repo.
 # The recommendation is the script here in qcr/scripts matches
