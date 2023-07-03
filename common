@@ -57,7 +57,7 @@ function install_tool(){
 
     # Clone repo if doesn't exist
     if [ ! -d "$INSTALL_DIR" ]; then
-        printf "${INFO} No cached version of the '${TOOL_NAME}' tool found. Installing to '$INSTALL_DIR'...\n"
+        printf "\n${INFO} No cached version of the '${TOOL_NAME}' tool found. Installing to '$INSTALL_DIR'...\n"
         mkdir -p "${INSTALL_DIR}"
         if ! git clone "$REPO_URL" "$INSTALL_DIR"; then
             printf "${ERROR} Install failed, please ensure machine has Internet access.\n"

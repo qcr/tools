@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 #
-# A light wrapper for using the code_templates tool via qcr command. 
+# A light wrapper for using the Commission tool via qcr command. 
 # This is deliberately light, so that users should never 
 # have to update this script once they have it, but will
 # always have access to the latest service tool.
 #
-# It installs (git clones) the code_templates tool if it doesn't
-# exist, and then calls the latex_templates tool entry point script.
-# Information on the code_templates tool can be found at:
-#     https://github.com/qcr/code_templates
+# It installs (git clones) the commission tool if it doesn't
+# exist, and then calls the commission tool entry point script.
+# Information on the commission tool can be found at:
+#     https://github.com/qcr/qcr-commission-tools
 # 
-# For usage on how to use the code_templates tool run: 
-#     qcr code_templates -h
+# For usage on how to use the commission tool run: 
+#     qcr commission -h
 #
-# Author: Ben Talbot
-# Version: 0.4.0
+# Author: James Mount
+# Version: 0.2.0
 
 
 #################
@@ -24,16 +24,21 @@
 
 # The URL for this tool's repo
 # Used for cloning - Recommend to use SSH
-REPO_URL="git@github.com:qcr/code_templates"
+REPO_URL="git@github.com:qcr/qcr-commissioning-tools.git"
 
-# Tool name
-TOOL_NAME="$(basename $(readlink -f $0))"
+# Tool name - name of entry point script in the separate repo.
+# The recommendation is the script here in qcr/scripts matches
+# the name of the script in the separate repo. However,
+# can change TOOL_NAME if they are different.
+# TOOL_NAME="$(basename $(readlink -f $0))"
+TOOL_NAME=install
 
 # The directory of containing this script
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # The install directory to the tools directory
-INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
+# INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
+INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/commissioning-tool"
 
 
 #################
@@ -45,7 +50,6 @@ INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
 ############
 ### MAIN ###
 ############
-
 
 # Get arguments passed by qcr script, 
 # Arguments passed are:
@@ -70,4 +74,3 @@ fi
  
 # Run services tool with provided command and arguments
 ${INSTALL_DIR}/${TOOL_NAME}  "${ARGS[@]}"
-

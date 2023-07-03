@@ -22,8 +22,9 @@
 #################
 
 
-# The URL for this tool's repo
-REPO_URL="https://github.com/qcr/<TOOL-NAME>"
+# The URL for this tool's repo 
+# Used for cloning - Recommend to use SSH
+REPO_URL="git@github.com:qcr/<TOOL-NAME>"
 
 # Tool name - name of entry point script in the separate repo.
 # The recommendation is the script here in qcr/scripts matches

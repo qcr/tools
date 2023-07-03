@@ -40,8 +40,6 @@ Arguments:
 Examples:
   Print the list of available tools: qcr -l
   Print the services tool help menu: qcr services -h
-  Attempt to execute 'tool_x' located at location /home/$USER/my_tool: qcr -T /home/${USER}/my_tool/tool_x
-
 
 Further Details:
 

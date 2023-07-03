@@ -23,7 +23,8 @@
 
 
 # The URL for this tool's repo
-REPO_URL="https://github.com/qcr/latex-templates"
+# Used for cloning - Recommend to use SSH
+REPO_URL="git@github.com:qcr/latex-templates"
 
 # Tool name
 TOOL_NAME="$(basename $(readlink -f $0))"
