@@ -59,8 +59,9 @@ function install_tool(){
     if [ ! -d "$INSTALL_DIR" ]; then
         printf "\n${INFO} No cached version of the '${TOOL_NAME}' tool found. Installing to '$INSTALL_DIR'...\n"
         mkdir -p "${INSTALL_DIR}"
-        if ! git clone "$REPO_URL" "$INSTALL_DIR"; then
+        if ! git clone --recurse-submodules "$REPO_URL" "$INSTALL_DIR"; then
             printf "${ERROR} Install failed, please ensure machine has Internet access.\n"
+            rm -rf "${INSTALL_DIR}"
             exit 1
         fi
     fi
