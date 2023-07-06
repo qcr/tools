@@ -64,7 +64,7 @@ function install_tool(){
         printf "\n${INFO} No cached version of the '${tool_name}' tool found. Installing to '$install_dir'...\n"
         mkdir -p "${install_dir}"
         if ! git clone --recurse-submodules "$repo_clone_url" "$install_dir"; then
-            printf "${ERROR} Install failed, please ensure machine has Internet access.\n"
+            printf "${ERROR} Install failed, please ensure machine has Internet access, a valid SSH Key is present (if required), and correct access rights to the repository.\n"
             rm -rf "${install_dir}"
             exit 1
         fi
@@ -96,7 +96,7 @@ function check_cloned_repo_is_latest(){
     installed="$(git -C "$REPO_DIR" rev-parse HEAD)"
     if [ -z "$latest" ]; then
         printf "${WARN}check for latest tools failed; using cached version in '$REPO_DIR'.\n"
-        return 2
+        return 1
     elif [ "$latest" != "$installed" ]; then
         printf "\n${WARN}${YELLOW}Old version (${installed:0:8}) found in '$REPO_DIR'.\n"
         printf "\tUpdate to latest (${latest:0:8}) using: qcr update ${TOOL_NAME}${RESET}"
@@ -106,6 +106,25 @@ function check_cloned_repo_is_latest(){
     fi
 
     return 0
+}
+
+
+function check_for_github_ssh_access() {
+    # Attempt to SSH to GitHub
+    ssh -T git@github.com &>/dev/null
+    RET=$?
+    if [ $RET == 1 ]; then
+        # user is authenticated, but fails to open a shell with GitHub
+        printf "${INFO}User authenticated with GitHub via SSH\n"
+        return 0
+    elif [ $RET == 255 ]; then
+        # user is not authenticated
+        printf "${ERROR}Unable to authenticate with GitHub via SSH\n"
+        exit 1
+    else
+        printf "${ERROR}Unknown exit code in attempt to ssh into git@github.com\n"
+        exit 2
+    fi
 }
 
 

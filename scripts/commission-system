@@ -40,6 +40,8 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/${TOOL_NAME}"
 INSTALL_DIR="$(dirname ${SCRIPT_DIR})/installed-tools/commissioning-tool"
 
+# Private Repo
+PRIVATE_REPO=true
 
 #################
 ### FUNCTIONS ###
@@ -65,6 +67,11 @@ source $(dirname ${SCRIPT_DIR})/common
 
 # Bail if git isn't found
 git_command_exists
+
+# Check for SSH access
+if [ ${PRIVATE_REPO} == true ]; then
+  check_for_github_ssh_access
+fi
 
 # Install tool, if required
 install_tool ${REPO_CLONE_URL} ${INSTALL_DIR} ${TOOL_NAME}

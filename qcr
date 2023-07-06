@@ -172,6 +172,7 @@ printf "\n${INFO}Calling '${YELLOW}$tool${RESET}'"
 if [ ! ${#tool_args[@]} -eq 0 ]; then
   printf " with args '${YELLOW}${tool_args[*]}${RESET}'"
 fi
+echo ""
 
 # Either execute the script contained in scripts/<tool> passing
 # in USE_CACHED and the tool arguments. Or attempt to run
