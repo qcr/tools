@@ -50,18 +50,19 @@ function install_tool(){
     # the program if failed to install.
     #
     # Usage:
-    #   install_tool <INSTALL_DIR> <TOOLNAME>
+    #   install_tool <REPO_CLONE_URL> <INSTALL_DIR> <TOOLNAME>
 
-    INSTALL_DIR=$1
-    TOOL_NAME=$2
+    repo_clone_url=$1
+    install_dir=$1
+    tool_name=$2
 
     # Clone repo if doesn't exist
-    if [ ! -d "$INSTALL_DIR" ]; then
-        printf "\n${INFO} No cached version of the '${TOOL_NAME}' tool found. Installing to '$INSTALL_DIR'...\n"
-        mkdir -p "${INSTALL_DIR}"
-        if ! git clone --recurse-submodules "$REPO_URL" "$INSTALL_DIR"; then
+    if [ ! -d "$install_dir" ]; then
+        printf "\n${INFO} No cached version of the '${tool_name}' tool found. Installing to '$install_dir'...\n"
+        mkdir -p "${install_dir}"
+        if ! git clone --recurse-submodules "$repo_clone_url" "$install_dir"; then
             printf "${ERROR} Install failed, please ensure machine has Internet access.\n"
-            rm -rf "${INSTALL_DIR}"
+            rm -rf "${install_dir}"
             exit 1
         fi
     fi

@@ -35,7 +35,7 @@ Arguments:
   -c|--use-cached   ignore checking for updates, use the cached version of qcr and tools (not yet implemented)
   -h|--help         show this help menu
   -l|--list         list available commands
-  -T|--tool-dir     specify the directory of the tool. Must start with '/' or '~/'. Useful for local development.
+  -T|--tool-dir     Used for local dev and testing. Specify the directory of the tool. Must start with '/' or '~/'.
 
 Examples:
   Print the list of available tools: qcr -l
@@ -123,9 +123,9 @@ if [ ${USE_CACHED} == false ]; then
 fi
 
 
-# Divert to selected command
-scripts_dir="${SCRIPT_DIR}/scripts"
-cmds="$(find "$scripts_dir" -executable -type f | sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
+# Divert to selected tool
+tools_dir="${SCRIPT_DIR}/scripts"
+cmds="$(find "$tools_dir" -executable -type f | sed "s|^$tools_dir/||; s|/| |g; s/ \.command$//")"
 cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
     echo "$c" || true; done | \
@@ -149,7 +149,7 @@ if [ ! ${TOOL_DIR} == false  ]; then
   fi
   tool="${TOOL_DIR}/$(echo "$cmd" | sed 's/ /\//g')"
 else
-  tool="$scripts_dir/$(echo "$cmd" | sed 's/ /\//g')"
+  tool="$tools_dir/$(echo "$cmd" | sed 's/ /\//g')"
   [ -d "$tool" ] && tool="$tool/.command"
 fi
 

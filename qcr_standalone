@@ -15,7 +15,7 @@ set -euo pipefail
 
 INSTALL_DIR="/var/tmp"
 REPO_DIR="${INSTALL_DIR}/qcr"
-REPO_URL="https://github.com/qcr/tools"
+REPO_CLONE_URL="https://github.com/qcr/tools"
 
 INFO='\033[0;35m[INFO] '
 ERROR='\033[0;31m[ERROR] '
@@ -31,7 +31,7 @@ command -v git >& /dev/null || {
 if [ ! -d "$REPO_DIR" ]; then
   printf "${INFO}%s${NC}\n" \
     "No cached version found. Installing to '$REPO_DIR'..."
-  if ! git clone "$REPO_URL" "$REPO_DIR"; then
+  if ! git clone "$REPO_CLONE_URL" "$REPO_DIR"; then
     printf "${ERROR}%s${NC}\n" \
       "Install failed, please ensure machine has Internet access."
     exit 1
