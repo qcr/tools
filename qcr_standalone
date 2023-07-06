@@ -15,7 +15,7 @@ set -euo pipefail
 
 INSTALL_DIR="/var/tmp"
 REPO_DIR="${INSTALL_DIR}/qcr"
-REPO_CLONE_URL="git@github.com/qcr/tools"
+REPO_CLONE_URL="git@github.com:qcr/tools"
 
 INFO='\033[0;35m[INFO] '
 ERROR='\033[0;31m[ERROR] '
@@ -36,6 +36,11 @@ if [ ! -d "$REPO_DIR" ]; then
       "Install failed, please ensure machine has Internet access."
     exit 1
   fi
+fi
+
+# Create file for storing when tool last updated/installed
+if [ ! -e "${REPO_DIR}/tool_updated_at" ]; then
+  echo "qcr: $(date)" > "${REPO_DIR}/tool_updated_at"
 fi
 
 # Defer to the main script
