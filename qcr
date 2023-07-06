@@ -163,7 +163,7 @@ fi
 # printf "\n"
 
 
-# Either execute the command in scripts/<tool> passing
+# Either execute the script contained in scripts/<tool> passing
 # in USE_CACHED and the tool arguments. Or attempt to run
 # the script given the TOOL_DIR and the tool arguments.
 if [ ${TOOL_DIR} == false  ]; then
