@@ -6,30 +6,95 @@
 #
 # Note: that you will probably end in a detached head state after this.
 
-set -euo pipefail
- 
-repo_dir="$(dirname "$(dirname "$0")")"
-latest="$(git -C "$repo_dir" ls-remote 2>/dev/null | \
-  grep HEAD | cut -f 1 || true)"
 
-if [ "$(git -C "$repo_dir")" == "$latest" ]; then
-  printf "\nAlready up-to-date ('${latest:0:8}'). Exiting."\n
+#################
+### VARIABLES ###
+#################
+
+
+# The directory of containing this script
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+
+#################
+### FUNCTIONS ###
+#################
+
+
+
+############
+### MAIN ###
+############
+
+set -euo pipefail
+
+# Get arguments passed by qcr script, 
+# Arguments passed are:
+#   USE_CACHED
+#   TOOL_TO_UPDATE
+USE_CACHED="${@:1:1}"
+TOOL_TO_UPDATE="${@:2:2}"
+
+# Source common
+source $(dirname ${SCRIPT_DIR})/common
+
+# Get the repo directory of the tool to update
+if [ "${TOOL_TO_UPDATE}" == "" ] || [ "${TOOL_TO_UPDATE}" == "qcr" ]; then
+  # Updating QCR tool
+  TOOL_TO_UPDATE="qcr"
+  REPO_DIR="$(dirname ${SCRIPT_DIR})"
+else
+  # Check tool script exists
+  if [ ! -e ${SCRIPT_DIR}/${TOOL_TO_UPDATE} ]; then
+    printf "${ERROR}The tool '${YELLOW}${TOOL_TO_UPDATE}${RESET}' does not exist. Run '${YELLOW}qcr --list${RESET}' for a list of available tools.\n"
+    exit 1
+  fi
+
+  # Probably a cleaner way of doing this, but oh well
+
+  # Get repo directory from the tool script stored in qcr/scripts/<tool_to_update>
+  REPO_DIR=$(sed -n 's/^INSTALL_DIR=\(.*\)/\1/p' < ${SCRIPT_DIR}/${TOOL_TO_UPDATE})
+  if [[ ${REPO_DIR} == *"TOOL_NAME"* ]]; then
+    # Repo directory contains tool_name variable, let's get its value from the file
+    TOOL_NAME=$(sed -n 's/^TOOL_NAME=\(.*\)/\1/p' < ${SCRIPT_DIR}/${TOOL_TO_UPDATE})
+    if [[ ${TOOL_NAME} == *"basename"* ]]; then
+      # Tool name is same as the TOOL_TO_UPDATE variable
+      TOOL_NAME=${TOOL_TO_UPDATE}
+    fi
+  fi
+  REPO_DIR=$(echo ${REPO_DIR} | tr -d '"')
+  REPO_DIR=$(eval echo ${REPO_DIR})
+fi
+
+# Make sure repo directory exists
+if [ ! -d ${REPO_DIR} ]; then
+  printf "${ERROR} the directory '${YELLOW}${REPO_DIR}${RESET}' does not exist. Cannot update tool ${YELLOW}${TOOL_TO_UPDATE}${RESET}.\n"
+  exit 1
+fi
+printf "${INFO}Attempting to update the '${YELLOW}${TOOL_TO_UPDATE}${RESET}' tool installed at '${YELLOW}${REPO_DIR}${RESET}'.\n\n"
+
+
+# Get latest
+LATEST="$(git -C "$REPO_DIR" ls-remote 2>/dev/null | grep HEAD | cut -f 1 || true)"
+
+if [ "$(git -C "$REPO_DIR")" == "$LATEST" ]; then
+  printf "\nAlready up-to-date ('${LATEST:0:8}'). Exiting."\n
+  exit 0
 fi
 
 local_changes=$(git status --porcelain=v1 2>/dev/null | wc -l)
 
-printf "\nUpdating tools in '$repo_dir' to '${latest:0:8}'...\n\n"
+printf "${INFO}Updating tools in '$REPO_DIR' to commit '${LATEST:0:8}'...\n"
 
-git -C "$repo_dir" fetch
-
-if [ "$local_changes" != "0" ]; then
-  git -C "$repo_dir" stash
-fi
-
-git -C "$repo_dir" checkout "$latest"
 
 if [ "$local_changes" != "0" ]; then
-  git -C "$repo_dir" stash pop || true
+  git -C "$REPO_DIR" stash
 fi
 
-printf "\nDone.\n"
+git -C "$REPO_DIR" pull
+
+if [ "$local_changes" != "0" ]; then
+  git -C "$REPO_DIR" stash pop || true
+fi
+
+printf "${INFO}Done.\n"

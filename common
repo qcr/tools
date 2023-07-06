@@ -97,9 +97,7 @@ function check_cloned_repo_is_latest(){
     elif [ "$latest" != "$installed" ]; then
         printf "\n${WARN}${YELLOW}Old version (${installed:0:8}) found in '$REPO_DIR'.\n"
         printf "\tUpdate to latest (${latest:0:8}) using: qcr update ${TOOL_NAME}${RESET}"
-        # if [ ! "${TOOL_NAME}" == "" ]; then
-            printf " (not yet implemented, instead run 'rm -rf ${REPO_DIR}' and re-run)"
-        # fi
+        # printf " (not yet implemented, instead run 'rm -rf ${REPO_DIR}' and re-run)"
         printf "${RESET}\n\n"
         return 2
     fi

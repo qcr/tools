@@ -160,22 +160,29 @@ printf "${INFO}Calling '${YELLOW}$tool${RESET}'"
 if [ ! ${#tool_args[@]} -eq 0 ]; then
   printf " with args '${YELLOW}${tool_args[*]}${RESET}'"
 fi
-# printf "\n"
-
+printf "\n"
 
 # Either execute the script contained in scripts/<tool> passing
 # in USE_CACHED and the tool arguments. Or attempt to run
 # the script given the TOOL_DIR and the tool arguments.
 if [ ${TOOL_DIR} == false  ]; then
   $tool ${USE_CACHED} "${tool_args[@]}" # aim of this is to run the "installed" version
+
+  # Form of command above is 
+  #   <TOOL_SCRIPT> <TOOL_DIR> <USE_CACHED> <TOOL ARGUMENTS>
+  #   
+  #   where <TOOL_SCRIPT> is the script being called in 
+  #   qcr/scripts/<tool> and not the tool's standalone
+  #   script.
+
 else
   printf "\n"
-  $tool "${tool_args[@]}"               # aim of this is to run a local/developer version
-fi
+  $tool "${tool_args[@]}"               # aim of this is to run a local/developer version of a tool
 
-# Form of command above is 
-#   <TOOL_SCRIPT> <TOOL_DIR> <USE_CACHED> <TOOL ARGUMENTS>
-#   
-#   where <TOOL_SCRIPT> is the script being called in 
-#   qcr/scripts/<tool> and not the tool's standalone
-#   script.
+  # Form of command above is 
+  #   <TOOL_SCRIPT> <TOOL ARGUMENTS>
+  #   
+  #   where <TOOL_SCRIPT> is the actual tool
+  #   script wanting to be run, not the entry script
+  #   stored in qcr/scripts/<tool>.
+fi

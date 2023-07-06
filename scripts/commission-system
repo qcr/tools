@@ -72,5 +72,5 @@ if [ ${USE_CACHED} == false ]; then
     check_cloned_repo_is_latest ${INSTALL_DIR} ${TOOL_NAME}
 fi
  
-# Run services tool with provided command and arguments
+# Run commission-system tool with provided command and arguments
 ${INSTALL_DIR}/${TOOL_NAME}  "${ARGS[@]}"
