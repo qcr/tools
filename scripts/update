@@ -74,16 +74,18 @@ fi
 printf "${INFO}Attempting to update the '${YELLOW}${TOOL_TO_UPDATE}${RESET}' tool installed at '${YELLOW}${REPO_DIR}${RESET}'.\n\n"
 
 
-# Get latest
+# Get latest and compare to installed version
+INSTALLED="$(git -C "$REPO_DIR" rev-parse HEAD)"
 LATEST="$(git -C "$REPO_DIR" ls-remote 2>/dev/null | grep HEAD | cut -f 1 || true)"
-
-if [ "$(git -C "$REPO_DIR")" == "$LATEST" ]; then
-  printf "\nAlready up-to-date ('${LATEST:0:8}'). Exiting."\n
+if [ -z "${LATEST}" ]; then
+  printf "${ERROR}Failed to get the latest tool. Unable to update.\n"
+elif [ "$INSTALLED" == "$LATEST" ]; then
+  printf "${INFO}Tool is already up-to-date (commit '${LATEST:0:8}'). Exiting.\n"
   exit 0
 fi
 
-local_changes=$(git status --porcelain=v1 2>/dev/null | wc -l)
-
+# Local changes
+local_changes=$(git -C "$REPO_DIR" status --porcelain=v1 2>/dev/null | wc -l)
 printf "${INFO}Updating tools in '$REPO_DIR' to commit '${LATEST:0:8}'...\n"
 
 
@@ -91,6 +93,7 @@ if [ "$local_changes" != "0" ]; then
   git -C "$REPO_DIR" stash
 fi
 
+printf "${INFO}Calling: git pull ${REPO_DIR}\n"
 git -C "$REPO_DIR" pull
 
 if [ "$local_changes" != "0" ]; then
