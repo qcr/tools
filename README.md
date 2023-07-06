@@ -124,6 +124,8 @@ To add a new tool:
 
 For an example of a standalone tool see the [create_tag](/scripts/create-tag) tool. For an example of a tool stored in a separate repository see the [Services](https://github.com/qcr/services) tool.
 
+**Note**: while developing your own tool you may wish to use the `--tool-dir` and `--force-update-check` arguments; run `qcr --help` for more information.
+
 # Reporting Tool Issues
 
 Please use the [GitHub Issues](https://github.com/qcr/tools/issues) associated with this repository to highlight any issues with a tool or if you believe a tool's feature set should be expanded. Feel free to mention the creator of the tool, if known, using their GitHub user handle.

@@ -18,7 +18,8 @@ set -uo pipefail
 
 # The name of this script, and the directory where it is located
 SCRIPT_NAME="$(basename $(readlink -f $0))"
-SCRIPT_DIR="$(dirname $(readlink -f $0))"
+QCR_SCRIPT_DIR="$(dirname $(readlink -f $0))"
+
 
 
 #################
@@ -29,13 +30,14 @@ print_usage() {
   printf "The QCR Script - access to all our shared tools
 
 Usage:
-  qcr [-c|--use-cached] [-h|--help] [-l|--list] [-T|--tool-dir <directory>] <tools> <sub-command> <arguments>
+  qcr [-c|--use-cached] [-f|--force-update-check] [-h|--help] [-l|--list] [-T|--tool-dir <directory>] <tools> <sub-command> <arguments>
 
 Arguments:
-  -c|--use-cached   ignore checking for updates, use the cached version of qcr and tools (not yet implemented)
-  -h|--help         show this help menu
-  -l|--list         list available commands
-  -T|--tool-dir     Used for local dev and testing. Specify the directory of the tool. Must start with '/' or '~/'.
+  -c|--use-cached         ignore checking for updates, use the cached version of qcr and tools
+  -f|--force-update-check force checking of an update
+  -h|--help               show this help menu
+  -l|--list               list available commands
+  -T|--tool-dir           used for local dev and testing. Specify the directory of the tool. Must start with '/' or '~/'
 
 Examples:
   Print the list of available tools: qcr -l
@@ -60,7 +62,7 @@ list_tools(){
 }
 
 get_tools(){
-  scripts_dir=${SCRIPT_DIR}/scripts
+  scripts_dir=${QCR_SCRIPT_DIR}/scripts
   tools="$(find "$scripts_dir" -executable -type f | sed "s|^$scripts_dir/||; s|/| |g; s/ \.command$//")"
 
   echo "${tools[@]}"
@@ -73,7 +75,7 @@ get_tools(){
 ############
 
 # Source common
-source ${SCRIPT_DIR}/common
+source ${QCR_SCRIPT_DIR}/common
 
 # Display heading
 display_heading "QCR TOOLS"
@@ -90,10 +92,11 @@ sub=( "${@:$sub_index}" )
 # echo "Sub Args: ${sub[@]}"
 
 # Process main arguments using getopt command, oif there are any
+FORCE_UPDATE_CHECK=false
 USE_CACHED=false
 TOOL_DIR=false
 if [ ! ${#main_args[@]} -eq 0 ]; then
-  PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'chlT:' --long 'use-cached,help,list,tool-dir:' -- "${main_args[@]}")
+  PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'cfhlT:' --long 'use-cached,help,list,tool-dir:,force-update-check' -- "${main_args[@]}")
   eval set -- "${PARSED_ARGS}"
   while true; do
     case "$1" in 
@@ -103,6 +106,8 @@ if [ ! ${#main_args[@]} -eq 0 ]; then
         list_tools; ;;
       -c|--use-cached)
         USE_CACHED=true; shift ;;
+      -f|--force-update-check)
+        FORCE_UPDATE_CHECK=true; shift ;;
       -T|--tool-dir)
         TOOL_DIR=$2; shift 2 ;;
       # -- indicates end of arguments, break while loop
@@ -116,15 +121,22 @@ if [ ! ${#main_args[@]} -eq 0 ]; then
   done
 fi
 
-# Check if latest version of qcr repo, pass with empty name 
-# so prints 'qcr update' and not 'qcr update qcr'
-if [ ${USE_CACHED} == false ]; then
-  check_cloned_repo_is_latest ${SCRIPT_DIR} ""
+# Using cached version or not
+if [ $USE_CACHED == false ]; then
+  # Check for update if required
+  tmp=$(should_check_for_update ${QCR_SCRIPT_DIR} "*/installed-tools")
+  if [ "$tmp" == "1" ] || [ ${FORCE_UPDATE_CHECK} == true ]; then
+    printf "${INFO}Checking for update to tool '${YELLOW}qcr${RESET}'\n"
+    check_cloned_repo_is_latest ${QCR_SCRIPT_DIR} ""
+  fi
+
+else
+  printf "${INFO}Using cached tool versions.\n"
 fi
 
 
 # Divert to selected tool
-tools_dir="${SCRIPT_DIR}/scripts"
+tools_dir="${QCR_SCRIPT_DIR}/scripts"
 cmds="$(find "$tools_dir" -executable -type f | sed "s|^$tools_dir/||; s|/| |g; s/ \.command$//")"
 cmd="$(echo "$cmds" | while read c; do \
   [[ "${sub[@]}" == "$c "* ]] || [[ "${sub[@]}" == "$c" ]] && \
@@ -135,7 +147,7 @@ if [ -z "$cmd" ]; then
   if [ ${#sub[@]} -gt 0 ]; then
     printf "\n${ERROR}No command matched '%s'.\n\n" "$(echo "${sub[@]}")"
   fi
-  printf "Please select from the following tools. "
+  printf "\nPlease select from the following tools. "
   list_tools
   exit 1
 fi
@@ -156,20 +168,19 @@ fi
 tool_args=( "${sub[@]:$(echo "$cmd" | wc -w)}" )
 
 # Print the command being run and the arguments
-printf "${INFO}Calling '${YELLOW}$tool${RESET}'"
+printf "\n${INFO}Calling '${YELLOW}$tool${RESET}'"
 if [ ! ${#tool_args[@]} -eq 0 ]; then
   printf " with args '${YELLOW}${tool_args[*]}${RESET}'"
 fi
-printf "\n"
 
 # Either execute the script contained in scripts/<tool> passing
 # in USE_CACHED and the tool arguments. Or attempt to run
 # the script given the TOOL_DIR and the tool arguments.
 if [ ${TOOL_DIR} == false  ]; then
-  $tool ${USE_CACHED} "${tool_args[@]}" # aim of this is to run the "installed" version
+  $tool ${USE_CACHED} ${FORCE_UPDATE_CHECK} "${tool_args[@]}" # aim of this is to run the "installed" version
 
   # Form of command above is 
-  #   <TOOL_SCRIPT> <TOOL_DIR> <USE_CACHED> <TOOL ARGUMENTS>
+  #   <TOOL_SCRIPT> <USE_CACHED> <FORCE_UPDATE_CHECK> <TOOL ARGUMENTS>
   #   
   #   where <TOOL_SCRIPT> is the script being called in 
   #   qcr/scripts/<tool> and not the tool's standalone

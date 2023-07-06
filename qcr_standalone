@@ -38,10 +38,5 @@ if [ ! -d "$REPO_DIR" ]; then
   fi
 fi
 
-# Create file for storing when tool last updated/installed
-if [ ! -e "${REPO_DIR}/tool_updated_at" ]; then
-  echo "qcr: $(date)" > "${REPO_DIR}/tool_updated_at"
-fi
-
 # Defer to the main script
 $REPO_DIR/qcr "$@"

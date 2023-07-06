@@ -11,7 +11,10 @@
 #################
 
 # The location of the tools directory
-TOOLS_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# TOOLS_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# Number of minutes to wait until checking for update
+UPDATE_AFTER_N_MINS=1440
 
 # Screen Reset
 RESET='\033[0m'
@@ -124,4 +127,23 @@ function display_heading() {
     printf "%.0s$char" $(seq 1 $right_pad)
     printf "\n"; printf "%.0s$char" {1..80}; printf "\n"
     printf "${RESET}"
+}
+
+
+function should_check_for_update() {
+    # Determines to see if a check for
+    # an updated version of the tool is 
+    # required based on modification dates
+    # of files. Returns "1" if the tool
+    # should check for updates, 0 otherwise
+    #
+    # Usage:
+    #   should_check_for_update <DIR> <EXCLUDE_PATH>
+
+    tmp=$(find $1 -mmin -${UPDATE_AFTER_N_MINS} -not -path "$2")
+    if [[ -z ${tmp} ]]; then
+        echo "1"
+    else
+        echo "0"
+    fi
 }
