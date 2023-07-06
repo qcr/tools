@@ -53,8 +53,8 @@ function install_tool(){
     #   install_tool <REPO_CLONE_URL> <INSTALL_DIR> <TOOLNAME>
 
     repo_clone_url=$1
-    install_dir=$1
-    tool_name=$2
+    install_dir=$2
+    tool_name=$3
 
     # Clone repo if doesn't exist
     if [ ! -d "$install_dir" ]; then
