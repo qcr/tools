@@ -26,21 +26,23 @@ There are two options for installation: standalone and Git-based. Standalone, is
 
 ## Standalone installation
 
-1. Pick a directory on your PATH (`/usr/bin/` is recommended on shared machines, or `~/bin` on personal machines):
+1. Pick a directory on your PATH (`/usr/bin/` is recommended on shared machines, or `~/bin` on personal machines), download the standalone script and make it executable. 
 
+For shared machines run:
 ```
-cd /usr/bin/
-```
-
-2. Download the standalone script and make it executable (drop the two sudos if installing to `~/bin`):
-
-```
-sudo wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && sudo chmod 775 qcr
+sudo wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && sudo chmod /usr/bin/775 qcr
 ```
 
-Done. The tool scripts will be stored in `/var/tmp/qcr` when you first run the `qcr` script to support offline access.
+For personal machines run:
+```
+wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod ~/bin/775 qcr
+```
 
-_Note: A `~/bin` directory can be created if it doesn't exist by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will need to log out and back in to source it for the first time after you create it. It's good practice to put any other user defined scripts that you want executable from any directory in `~/bin/`._
+2. Run `qcr` to install the scripts and use the tool. 
+
+**Notes**:
+- The tool will be stored in `/var/tmp/qcr` when you first run the `qcr` script to support offline access.
+- A `~/bin` directory can be created if it doesn't exist by running `mkdir ~/bin`. This directory is automatically sourced when you log in. You will need to log out and back in to source it for the first time after you create it. It's good practice to put any other user defined scripts that you want executable from any directory in `~/bin/`.
 
 ## Git-based installation
 
