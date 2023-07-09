@@ -31,9 +31,11 @@ set -euo pipefail
 # Get arguments passed by qcr script, 
 # Arguments passed are:
 #   USE_CACHED
+#   FORCE_UPDATE_CHECK
 #   TOOL_TO_UPDATE
 USE_CACHED="${@:1:1}"
-TOOL_TO_UPDATE="${@:2:2}"
+FORCE_UPDATE_CHECK="${@:2:1}"
+TOOL_TO_UPDATE="${@:3:1}"
 
 # Source common
 source $(dirname ${SCRIPT_DIR})/common
