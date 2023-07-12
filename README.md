@@ -30,12 +30,12 @@ There are two options for installation: standalone and Git-based. Standalone, is
 
 For shared machines run:
 ```
-sudo wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && sudo chmod /usr/bin/775 qcr
+sudo wget -O /usr/bin/qcr https://github.com/qcr/tools/raw/master/qcr_standalone && sudo chmod 775 /usr/bin/qcr
 ```
 
 For personal machines run:
 ```
-wget -O qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod ~/bin/775 qcr
+wget  -O ~/bin/qcr https://github.com/qcr/tools/raw/master/qcr_standalone && chmod 775 ~/bin/qcr
 ```
 
 2. Run `qcr` to install the scripts and use the tool. 
