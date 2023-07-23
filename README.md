@@ -86,6 +86,8 @@ A list of available tools can also be seen by simply invoking the tool with no a
 qcr
 ```
 
+**Note:** To use the tool, you will require a SSH Key to exist on your machine and for it to be added to your GitHub account (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for instructions).
+
 # What is actually going on
 
 The `qcr` script calls the latest version of the desired tool in the [./scripts/](/scripts/) directory of this repository. It does this by translating the following syntax:
