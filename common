@@ -14,7 +14,7 @@
 # TOOLS_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # Number of minutes to wait until checking for update
-UPDATE_AFTER_N_MINS=1440
+UPDATE_AFTER_N_MINS=1
 
 # Screen Reset
 RESET='\033[0m'
@@ -105,6 +105,9 @@ function check_cloned_repo_is_latest(){
         return 2
     fi
 
+    # Successfully determined no update exists currently
+    # Don't check again until after UPDATE_AFTER_N_MINS has passed
+    touch "${REPO_DIR}/${TOOL_NAME}"
     return 0
 }
 
