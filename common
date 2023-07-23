@@ -10,11 +10,15 @@
 ### VARIABLES ###
 #################
 
-# The location of the tools directory
-# TOOLS_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# Directory of this common script
+COMMON_SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+# User config directory and files
+UC_DIR=${COMMON_SCRIPT_DIR}/.user_config
+DEFAULTS_FILE=${UC_DIR}/defaults
 
 # Number of minutes to wait until checking for update
-UPDATE_AFTER_N_MINS=1
+CHECK_FOR_UPDATE_AFTER_N_MINS=1440
 
 # Screen Reset
 RESET='\033[0m'
@@ -34,6 +38,11 @@ INFO="${GREEN}[INFO]${RESET} "
 WARN="${YELLOW}[WARN]${RESET} "
 ERROR="${RED}[ERROR]${RESET} "
 
+# Source user default variables, if exists
+# To overwrite the defaults set here
+if [ -e ${DEFAULTS_FILE} ]; then
+    source ${DEFAULTS_FILE}
+fi
 
 #################
 ### FUNCTIONS ###
@@ -162,7 +171,7 @@ function should_check_for_update() {
     # Usage:
     #   should_check_for_update <DIR> <EXCLUDE_PATH>
 
-    tmp=$(find $1 -mmin -${UPDATE_AFTER_N_MINS} -not -path "$2")
+    tmp=$(find $1 -mmin -${CHECK_FOR_UPDATE_AFTER_N_MINS} -not -path "$2")
     if [[ -z ${tmp} ]]; then
         echo "1"
     else

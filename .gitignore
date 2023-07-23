@@ -5,3 +5,4 @@
 .vscode
 
 installed-tools/
+.user_config/

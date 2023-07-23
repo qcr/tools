@@ -1,0 +1,106 @@
+#!/bin/bash
+#
+
+
+#################
+### VARIABLES ###
+#################
+
+# The name of this script, and the directory where it is located
+SCRIPT_NAME="$(basename $(readlink -f $0))"
+SCRIPT_DIR="$(dirname $(readlink -f $0))"
+
+#################
+### FUNCTIONS ###
+#################
+
+function print_usage() {
+  printf "The QCR config command allows you to configure user defaults
+
+Usage:
+  qcr config [-h|--help] [-u|--update-timer <val>]
+
+Arguments:
+  -u|--update-timer <val>   set the how often to check for updates. Value is in minutes.
+
+"
+
+}
+
+
+function _set_update_timer_variable() {
+
+    # Write variable if required
+    grep -q '^CHECK_FOR_UPDATE_AFTER_N_MINS=' ${DEFAULTS_FILE} || echo 'CHECK_FOR_UPDATE_AFTER_N_MINS='$1 >> ${DEFAULTS_FILE}
+
+    # Update value
+    sed -i 's/CHECK_FOR_UPDATE_AFTER_N_MINS=.*$/CHECK_FOR_UPDATE_AFTER_N_MINS='$1'/' ${DEFAULTS_FILE}
+
+    # Communicate to user
+    printf "${INFO}Will only check for updates every ${1} minutes.\n"
+}
+
+
+###################
+### MAIN SCRIPT ###
+###################
+
+# Get arguments passed by qcr script, 
+# Arguments passed are:
+#   USE_CACHED
+#   FORCE_UPDATE_CHECK
+#   ARGS_TO_TOOL
+USE_CACHED="${@:1:1}"
+FORCE_UPDATE_CHECK="${@:2:1}"
+ARGS=( "${@:3}" )
+
+# Set shell options, enter help set in terminal for definitions
+set -euo pipefail
+
+# Source common
+source $(dirname ${SCRIPT_DIR})/common
+
+# Make user config directory
+mkdir -p ${UC_DIR}
+
+# Create file if required
+if [ ! -e "${UC_DIR}/defaults" ]; then
+    echo "" > "${UC_DIR}/defaults"
+fi
+
+# Parse Arguments
+PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'hu:' --long 'help,update-timer' -- "${ARGS[@]}")
+eval set -- "${PARSED_ARGS}"
+while true; do
+case "$1" in 
+    -h|--help) 
+    print_usage; exit 0 ;;
+    -u|--update-timer)
+    _set_update_timer_variable $2; shift 2;;
+    # -- indicates end of arguments, break while loop
+    --) shift; break ;;
+    # invalid option was passed, print usage
+    *)
+    printf "${ERROR}Unrecognized option '$1'\n" 
+    print_usage 
+    exit 1 ;;    
+esac
+done
+
+exit 0
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -h|--help) 
+      print_usage
+      exit 0;;
+    -u|--update-timer)
+      _set_update_timer_variable $2
+      shift 2
+      ;;
+    *)
+      echo "Invalid argument: \"$1\""
+      exit 1;
+  esac
+done
