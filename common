@@ -70,6 +70,10 @@ function install_tool(){
 
     # Clone repo if doesn't exist
     if [ ! -d "$install_dir" ]; then
+        # Check can SSH into Github
+        check_for_github_ssh_access
+
+        # Install
         printf "\n${INFO} No cached version of the '${tool_name}' tool found. Installing to '$install_dir'...\n"
         mkdir -p "${install_dir}"
         if ! git clone --recurse-submodules "$repo_clone_url" "$install_dir"; then
@@ -90,7 +94,7 @@ function check_cloned_repo_is_latest(){
     # Returns:
     #       0 - if repo is latest
     #       1 - if repo is outdated
-    #       2 - if failed to perform checck
+    #       2 - if failed to perform check
     #
     # Usage:
     #   check_cloned_repo_is_latest <REPO_DIR> <TOOL_NAME>
@@ -131,7 +135,7 @@ function check_for_github_ssh_access() {
         return 0
     elif [ $RET == 255 ]; then
         # user is not authenticated
-        printf "${ERROR}Unable to authenticate with GitHub via SSH\n"
+        printf "${ERROR}Unable to authenticate with GitHub via SSH.\nPlease make sure you have generated a SSH key on this computer and connected it with your GitHub account.\nSee https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent.\n"
         exit 1
     else
         printf "${ERROR}Unknown exit code in attempt to ssh into git@github.com\n"

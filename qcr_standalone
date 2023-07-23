@@ -21,6 +21,25 @@ INFO='\033[0;35m[INFO] '
 ERROR='\033[0;31m[ERROR] '
 NC='\033[0m'
 
+# Function
+function check_for_github_ssh_access() {
+    # Attempt to SSH to GitHub
+    ssh -T git@github.com &>/dev/null
+    RET=$?
+    if [ $RET == 1 ]; then
+        # user is authenticated, but fails to open a shell with GitHub
+        printf "${INFO}User authenticated with GitHub via SSH\n"
+        return 0
+    elif [ $RET == 255 ]; then
+        # user is not authenticated
+        printf "${ERROR}Unable to authenticate with GitHub via SSH.\nPlease make sure you have generated a SSH key on this computer and connected it with your GitHub account.\nSee https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent.\n"
+        exit 1
+    else
+        printf "${ERROR}Unknown exit code in attempt to ssh into git@github.com\n"
+        exit 2
+    fi
+}
+
 # Bail if git isn't found
 command -v git >& /dev/null || {
   printf "${ERROR}%s${NC}\n" "Command 'git' was not found, please install"
@@ -29,6 +48,10 @@ command -v git >& /dev/null || {
 
 # Install if not installed
 if [ ! -d "$REPO_DIR" ]; then
+  # Check SSH key exists
+  check_for_github_ssh_access
+
+  # Install
   printf "${INFO}%s${NC}\n" \
     "No cached version found. Installing to '$REPO_DIR'..."
   if ! git clone "$REPO_CLONE_URL" "$REPO_DIR"; then
