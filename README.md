@@ -62,6 +62,8 @@ ln -s <where_cloned_tools_repo>/qcr ~/bin/
 
 ## Using the script
 
+To use the tool, you will require an SSH Key to exist on your machine and for it to be added to your GitHub account (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for instructions).
+
 Using the script is simple once it's on your PATH. Any tool can be run via:
 
 ```
@@ -86,7 +88,7 @@ A list of available tools can also be seen by simply invoking the tool with no a
 qcr
 ```
 
-**Note:** To use the tool, you will require a SSH Key to exist on your machine and for it to be added to your GitHub account (see [here](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for instructions).
+**Note:** If the tool ever gets in an odd state, you can simply run `sudo rm -rf /var/tmp/qcr` to remove the tool. You will still have the ability to call `qcr` and reinstall/use the desired tools.
 
 # What is actually going on
 
