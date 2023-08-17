@@ -17,8 +17,8 @@ A list of the tools available can be found by simply running the `qcr` script. S
 - **code-templates** - starts a new project using one of [our code templates](https://github.com/qcr/code_templates) (author [btalb](https://github.com/btalb))
 - **latex-templates** - starts a new latex project using one of [our latex templates](https://github.com/qcr/latex-templates) (author [jmount1992](https://github.com/jmount1992))
 - **create-tag** - allows the generation of a QR-QCR tag linked to a URL (author [btalb](https://github.com/btalb))
-- **system-configs** - a series of scripts for managing and tracking system configuration settings on shared systems (author [btalb](https://github.com/btalb))
-- **services** - a series of scripts for managing services and start-up service configurations (author [jmount1992](https://github.com/jmount1992))
+- [**system-configs**](https://github.com/qcr/system-configs) - a series of scripts for managing and tracking system configuration settings on shared systems (author [btalb](https://github.com/btalb))
+- [**services**](https://github.com/qcr/services-config) - a series of scripts for managing services and start-up service configurations (author [jmount1992](https://github.com/jmount1992))
 
 ## Installing the tools
 
