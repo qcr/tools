@@ -55,7 +55,7 @@ display_heading "CREATE QR TAG"
 #   USE_CACHED
 #   ARGS_TO_TOOL
 USE_CACHED="${@:1:1}"
-ARGS=( "${@:2}" )
+ARGS=( "${@:3}" )
 
 # Parse arguments
 PARSED_ARGS=$(getopt -a -q -n ${SCRIPT_NAME} -o 'h' --long 'help' -- "${ARGS[@]}")
